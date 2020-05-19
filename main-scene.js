@@ -11,16 +11,12 @@ class Assignment_Three_Scene extends Scene_Component
         const r = context.width/context.height;
         context.globals.graphics_state.projection_transform = Mat4.perspective( Math.PI/4, r, .1, 1000 );
 
-        const shapes = { torus:  new Torus( 15, 15 ),
-                         torus2: new ( Torus.prototype.make_flat_shaded_version() )( 15, 15 ),
- 
-                                // TODO:  Fill in as many additional shape instances as needed in this key/value table.
-                                //        (Requirement 1)
+        const shapes = { 
                          sphere1: new ( Subdivision_Sphere.prototype.make_flat_shaded_version() )(1),
                          sphere2: new ( Subdivision_Sphere.prototype.make_flat_shaded_version() )(2),
                          sphere3: new Subdivision_Sphere(3),
                          sphere4: new Subdivision_Sphere(4),
-                         custom_torus: new Custom_Torus(10,10)
+                         checker: new Checker_Peice(20,20)
                        }
         this.submit_shapes( context, shapes );
                                      
@@ -53,8 +49,19 @@ class Assignment_Three_Scene extends Scene_Component
     display( graphics_state )
       { graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
         const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
+            
+        graphics_state.lights = [new Light( Vec.of(-10,0,0,1 ), Color.of(0,0,0,1), 10**5),
+                         new Light( Vec.of(10,0,0,1 ), Color.of(0,0,0,1), 10**5),
+                         new Light( Vec.of(0,-10,0,1 ), Color.of(0,0,0,1), 10**5),
+                         new Light( Vec.of(0,10,0,1 ), Color.of(0,0,0,1), 10**5),
+                         new Light( Vec.of(0,0,-10,1 ), Color.of(0,0,0,1), 10**5),
+                         new Light( Vec.of(0,0,10,1 ), Color.of(0,0,0,1), 10**5)];
 
-        
+        const white_color = Color.of(.906,.725,.514,1)
+        const black_color = Color.of(.396,.141,0,1)
+
+        this.shapes.checker.draw(graphics_state,Mat4.translation(Vec.of(5,0,0,1)),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}))
+        this.shapes.checker.draw(graphics_state,Mat4.translation(Vec.of(-5,0,0,1)),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:black_color}))
 
         
       }

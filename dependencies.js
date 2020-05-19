@@ -478,35 +478,39 @@ class Surface_Of_Revolution extends Grid_Patch      // SURFACE OF REVOLUTION: Pr
                                                     // we have a flexible "generalized cylinder" spanning an area until total_curvature_angle.
 { constructor( rows, columns, points, texture_coord_range, total_curvature_angle = 2*Math.PI )
     { const row_operation =     i => Grid_Patch.sample_array( points, i ),
-         column_operation = (j,p) => Mat4.rotation( total_curvature_angle/columns, Vec.of( 0,0,1 ) ).times(p.to4(1)).to3();
+         column_operation = (j,p) => Mat4.rotation( total_curvature_angle/columns, Vec.of( 0,1,0 ) ).times(p.to4(1)).to3();
          
        super( rows, columns, row_operation, column_operation, texture_coord_range );
     }
 }
 
-window.Torus = window.classes.Torus =
-class Torus extends Shape                                         // Build a donut shape.  An example of a surface of revolution.
+window.Checker_Peice = window.classes.Checker_Peice =
+class Checker_Peice extends Shape                                         // Build a Checker Peice
   { constructor( rows, columns )  
       { super( "positions", "normals", "texture_coords" );
-        const circle_points = Array( rows ).fill( Vec.of( .75,0,0 ) )
-                                           .map( (p,i,a) => Mat4.translation([ -2,0,0 ])
-                                                    .times( Mat4.rotation( i/(a.length-1) * 2*Math.PI, Vec.of( 0,-1,0 ) ) )
-                                                    .times( p.to4(1) ).to3() );
 
-        Surface_Of_Revolution.insert_transformed_copy_into( this, [ rows, columns, circle_points ] );         
-      } }
+        //x length
+        const X_LENGTH = 3.0
+        const HEIGHT = 1.0
+        const TOP_POINTS = rows - 2
 
+        //vertices
+        var checker_points = [];
+        
+        //Top pts ((0,H)->(X,H))
+        for(var x_coord = 0; x_coord<X_LENGTH; x_coord += X_LENGTH/TOP_POINTS)
+          checker_points.push(Vec.of(x_coord,HEIGHT+0.25*Math.sin(10*x_coord),0))
 
-window.Custom_Torus = window.classes.Custom_Torus =
-class Custom_Torus extends Shape                                         // Build a donut shape.  An example of a surface of revolution.
-  { constructor( rows, columns )  
-      { super( "positions", "normals", "texture_coords" );
-        const circle_points = Array( rows ).fill( Vec.of( .75,0,0 ) )
-                                           .map( (p,i,a) => Mat4.translation([ -2,0,0 ])
-                                                    .times( Mat4.rotation( i/(a.length-1) * 2*Math.PI, Vec.of( 0,-1,0 ) ) )
-                                                    .times( p.to4(1) ).to3() );
-        var semicircle_points = [];
-        for(var theta = 0; theta<=Math.PI; theta+=(Math.PI/rows))
-          semicircle_points.push(Mat4.rotation(theta,Vec.of(0,1,0)).times(Vec.of(0,0,1,1)))
-        Surface_Of_Revolution.insert_transformed_copy_into( this, [ rows, columns, semicircle_points ] );         
+        //side pt
+       checker_points.push(Vec.of(X_LENGTH,0,0))
+
+        //bottom pt
+        checker_points.push(Vec.of(0,0,0))
+
+        console.log(checker_points)
+        
+        //rotate cross section
+        Surface_Of_Revolution.insert_transformed_copy_into( this, [ rows, columns, checker_points ] ); 
+
+               
       } }
