@@ -506,8 +506,6 @@ class Checker_Peice extends Shape                                         // Bui
 
         //bottom pt
         checker_points.push(Vec.of(0,0,0))
-
-        console.log(checker_points)
         
         //rotate cross section
         Surface_Of_Revolution.insert_transformed_copy_into( this, [ rows, columns, checker_points ] ); 
