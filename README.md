@@ -16,7 +16,7 @@ Github: kaitlyn-wang
 
 # Project proposal: English Draughts (American checkers)
 
-![alt text](https://github.com/intro-graphics/team-project-team-checkers/blob/master/peices.png)
+![alt text](https://github.com/intro-graphics/team-project-team-checkers/blob/master/screenshots/Frame.png)
 
 ## Description:
 We will build an interactive board for checkers. A human-player will be able to mouse-pick the pieces to move them around, and the rules of checkers will keep the player from making illegal moves. There will be a simple AI opponent for the human-player to play against.
