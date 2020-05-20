@@ -16,7 +16,8 @@ class Assignment_Three_Scene extends Scene_Component
                          sphere2: new ( Subdivision_Sphere.prototype.make_flat_shaded_version() )(2),
                          sphere3: new Subdivision_Sphere(3),
                          sphere4: new Subdivision_Sphere(4),
-                         checker: new Checker_Peice(20,20)
+                         checker: new Checker_Peice(20,20),
+                         frame  : new Shape_From_File("assets/frame.obj")
                        }
         this.submit_shapes( context, shapes );
                                      
@@ -32,7 +33,6 @@ class Assignment_Three_Scene extends Scene_Component
 
 
           }
-
         this.lights = [ new Light( Vec.of( 5,-10,5,1 ), Color.of( 0, 1, 1, 1 ), 1000 ) ];
         this.attached = null
       }
@@ -46,7 +46,7 @@ class Assignment_Three_Scene extends Scene_Component
         this.key_triggered_button( "Attach to planet 5", [ "5" ], () => this.attached = () => this.planet_5 );
         this.key_triggered_button( "Attach to moon",     [ "m" ], () => this.attached = () => this.moon     );
       }
-    display( graphics_state )
+    display(graphics_state)
       { graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
         const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
             
@@ -59,11 +59,11 @@ class Assignment_Three_Scene extends Scene_Component
 
         const white_color = Color.of(.906,.725,.514,1)
         const black_color = Color.of(.396,.141,0,1)
+        const wood_color  = Color.of(.251, .149, .110, 1)
 
         this.shapes.checker.draw(graphics_state,Mat4.translation(Vec.of(5,0,0,1)),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}))
         this.shapes.checker.draw(graphics_state,Mat4.translation(Vec.of(-5,0,0,1)),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:black_color}))
-
-        
+        this.shapes.frame.draw(graphics_state, Mat4.translation(Vec.of(0,0,0,1)).times(Mat4.scale(Vec.of(50, 50, 50))), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:wood_color}))
       }
   }
 
@@ -99,7 +99,6 @@ class Ring_Shader extends Shader              // Subclasses of Shader each store
         attribute vec3 object_space_pos;
         uniform mat4 model_transform;
         uniform mat4 projection_camera_transform;
-
         void main()
         { 
           //we want to color based on object_space_pos Not the camera transformed position
@@ -122,8 +121,6 @@ class Ring_Shader extends Shader              // Subclasses of Shader each store
             else
               gl_FragColor = vec4(0, 0, 0, 1.0);
             
-
-
         }`;                  // TODO:  Complete the main function of the fragment shader (Extra Credit Part II).
     } 
 }
