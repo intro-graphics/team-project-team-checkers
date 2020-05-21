@@ -2,9 +2,10 @@
 // GLOBALS //
 /////////////////////////////////////////////////////////////////////////////////////
 const BOARD_DIM = 8
+const MAX_HEURISTIC = 10000
 const MIN_HEURISTIC = -10000
 const MAX_DIST = 10
-const DEFAULT_SEARCH_LIMIT = 3
+const DEFAULT_SEARCH_LIMIT = 7
 
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +74,12 @@ class Game
     var print_str = ""
     for(var r=0; r<BOARD_DIM; r++){
       for(var c=0; c<BOARD_DIM; c++){
-        print_str += state[r][c] + " "
+        var item = state[r][c]
+        if(item == 0)
+          print_str += "."
+        else
+          print_str += item
+        print_str += " "
       }
       print_str += "\n"
     }
@@ -359,12 +365,12 @@ class Game_AI
       var c = friendlies[i][1]
       //bonus for being away from center
       bonus += Math.round(Math.abs(r-3.5) + Math.abs(c-3.5))
+
       //bonus for being close to queen
-      //console.log(state,turn,r,c)
       if(this.game.isQueen(state,turn,r,c))
         bonus += 8
-      else if(turn == 'black')
-        bonus += BOARD_DIM - r
+      else if(turn == 'white')
+        bonus += (BOARD_DIM - 1) - r
       else
         bonus += r
     }
@@ -378,15 +384,16 @@ class Game_AI
     if(state == null)
       return MIN_HEURISTIC
 
-    var peice_coords = this.find_peices(state,'black')
+    var peice_coords = this.find_peices(state,turn)
     var friendlies = peice_coords[0]
     var enemies = peice_coords[1]
 
+    if(enemies.length < 0)
+      return MAX_HEURISTIC
+
     var delta_peices = this.peices_up(friendlies,enemies)
     var position_bonus = this.position_bonus(state,turn,friendlies)
-    var h = 8*delta_peices + position_bonus
-
-    //console.log(delta_peices,position_bonus)
+    var h = 20*delta_peices + position_bonus
 
     return h
   }
@@ -447,6 +454,12 @@ class Game_AI
   make_move(state)
   {
     var new_state = this.limited_depth_minimax_wrapper(state,DEFAULT_SEARCH_LIMIT)
+    var h_black_old = this.heuristic(state,"black")
+    var h_black_new = this.heuristic(new_state,"black")
+    var h_white_old = this.heuristic(state,"white")
+    var h_white_new = this.heuristic(new_state,"white")
+
+    console.log("Black:",h_black_old,"->",h_black_new,"White:",h_white_old,"->",h_white_new)
     this.game.print_state(new_state)
   }
 
