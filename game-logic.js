@@ -2,8 +2,9 @@
 // GLOBALS //
 /////////////////////////////////////////////////////////////////////////////////////
 const BOARD_DIM = 8
-const MAX_HEURISTIC = 100
+const MIN_HEURISTIC = -10000
 const MAX_DIST = 10
+const DEFAULT_SEARCH_LIMIT = 3
 
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -324,15 +325,7 @@ class Game_AI
   constructor(g)
   {
     this.game = g
-    this.gameState = g.gameState
   }
-
-  //update the gameState
-  update_gameState()
-  {
-    this.gameState = this.g.gameState
-  }
-
 
   //if r2,c2 is an enemy, return zero, if no where to go, return -1
   find_peices(state,turn)
@@ -357,26 +350,25 @@ class Game_AI
   }
 
   //shortest dist between enemies
-  enemy_dist(friendlies,enemies)
+  position_bonus(state,turn,friendlies)
   {
-
-    //no enemies or no friendlies, the game is over
-    if(friendlies.length==0 || enemies.length==0)
-      return 0
-
-    var shortest_dist = MAX_DIST
-
-    for(var i=0; i<friendlies.length; i++){
-      for(var j=0; j<enemies.length; j++){
-        var delta_r = Math.abs(friendlies[i][0] - enemies[j][0])
-        var delta_c = Math.abs(friendlies[i][1] - enemies[j][1])
-        var diag_dist = Math.max(delta_r,delta_c)-1
-        if (diag_dist < shortest_dist)
-          shortest_dist = diag_dist
-      }
+    var bonus = 0
+    for(var i=0; i<friendlies.length; i++)
+    {
+      var r = friendlies[i][0]
+      var c = friendlies[i][1]
+      //bonus for being away from center
+      bonus += Math.round(Math.abs(r-3.5) + Math.abs(c-3.5))
+      //bonus for being close to queen
+      //console.log(state,turn,r,c)
+      if(this.game.isQueen(state,turn,r,c))
+        bonus += 8
+      else if(turn == 'black')
+        bonus += BOARD_DIM - r
+      else
+        bonus += r
     }
-    return Math.max(shortest_dist,0)
-
+    return bonus
   }
 
 
@@ -384,18 +376,19 @@ class Game_AI
   heuristic(state,turn)
   {
     if(state == null)
-      return MAX_HEURISTIC
+      return MIN_HEURISTIC
 
     var peice_coords = this.find_peices(state,'black')
     var friendlies = peice_coords[0]
     var enemies = peice_coords[1]
 
-    var h = this.peices_up(friendlies,enemies) + Math.floor(this.enemy_dist(friendlies,enemies)/2)
+    var delta_peices = this.peices_up(friendlies,enemies)
+    var position_bonus = this.position_bonus(state,turn,friendlies)
+    var h = 8*delta_peices + position_bonus
 
-    //console.log(turn,h)
-    //this.game.print_state(state)
+    //console.log(delta_peices,position_bonus)
 
-     return h
+    return h
   }
 
   //helper for limited_depth_minimax_wrapper
@@ -407,7 +400,10 @@ class Game_AI
           if(l == max_l)
             return state
           else
+          {
+            //this.game.print_state(state)
             return this.heuristic(state,turn)
+          }
 
         //get children_states and check if a goal state was accomplished
         var children_states = this.game.next_states(state,turn)
@@ -422,13 +418,13 @@ class Game_AI
 
         //current best
         var best_state = null
-        var best_h = MAX_HEURISTIC
+        var best_h = MIN_HEURISTIC
 
         //for each child recurse deeper
         for(var i =0; i<children_states.length; i++)
         {
           var found_h = this.limited_depth_minimax(children_states[i],next_turn,l-1,l)
-          if (found_h < best_h){
+          if (found_h > best_h){
             best_state = children_states[i]
             best_h = found_h
           }
@@ -447,11 +443,14 @@ class Game_AI
     return best
   }
 
+  //take the game state after white move, prints the board after subsequent black move
+  make_move(state)
+  {
+    var new_state = this.limited_depth_minimax_wrapper(state,DEFAULT_SEARCH_LIMIT)
+    this.game.print_state(new_state)
+  }
+
 }
 
-/*
-var gam = new Game()
-var ai = new Game_AI(gam)
-var move = ai.limited_depth_minimax_wrapper(gam.gameState,5)
-gam.print_state(move)
-*/
+gam = new Game()
+ai = new Game_AI(gam)
