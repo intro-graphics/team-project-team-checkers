@@ -54,6 +54,24 @@ var test_state4 = [[ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
                    [ 0 , 0 , 0 , 0 , 0 , 0 ,'w', 0 ],
                    [ 0 , 0 , 0 , 0 , 0 , 0 , 0 ,'k']];
 
+ var test_state5 = [[ 0 ,'k', 0 , 0 , 0 , 0 , 0 , 0 ],
+                    [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
+                    [ 0 , 0 , 0 , 0 , 0 , 0 , 0,  0 ],
+                    [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
+                    [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
+                    [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
+                    [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
+                    [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ]];
+
+var test_state6 = [[ 0 ,'q', 0 , 0 , 0 , 0 , 0 , 0 ],
+                   [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
+                   [ 0 , 0 , 0 , 0 , 0 , 0 , 0,  0 ],
+                   [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
+                   [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
+                   [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
+                   [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
+                   [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ]];
+
 class Game
 {
   //initialize game state
@@ -445,7 +463,10 @@ class Game_AI
     var friendlies = peice_coords[0]
     var enemies = peice_coords[1]
 
-    if(enemies.length < 0)
+    if(friendlies.length <= 0)
+      return MIN_HEURISTIC
+
+    if(enemies.length <= 0)
       return MAX_HEURISTIC
 
     var delta_peices = this.peices_up_bonus(friendlies,enemies)
@@ -533,9 +554,20 @@ class Game_AI
     var move_state = move[1]
     var move_h = this.heuristic(move_state)
     var leaf_state = move[1]
-    var print_str = state_h.toString()+'->'+move_h.toString()+' (Expected score in '+l.toString()+' moves: '+leaf_h.toString()+')'
+    var print_str = state_h.toString()+'->'+move_h.toString()
+
+    //output
+    if (leaf_h>=MAX_HEURISTIC)
+      print_str += ' (Expecting Victory within '+l.toString()+' moves.)'
+    else if (leaf_h<=MIN_HEURISTIC)
+      print_str += ' (Expecting Defeat within '+l.toString()+' moves.)'
+    else
+      print_str += ' (Expected score in '+l.toString()+' moves: '+leaf_h.toString()+')'
+
+    //log to console
     console.log(print_str)
     this.game.print_state(move_state)
+    //return the new board
     return move_state
   }
 
