@@ -536,6 +536,10 @@ class Game_AI
         //get children_states and check if a goal state was accomplished
         var children_states = this.game.next_states(state,turn)
 
+        //if no children, we have no moves, this is also goal_state
+        if(children_states.length == 0)
+          return [this.heuristic(state),state]
+
         if(turn=="black")
           return this.maximizing_agent(children_states,l,alpha,beta)
 
