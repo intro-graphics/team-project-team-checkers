@@ -557,7 +557,11 @@ class Game_AI
     var print_str = state_h.toString()+'->'+move_h.toString()
 
     //output
-    if (leaf_h>=MAX_HEURISTIC)
+    if (state_h>=MAX_HEURISTIC)
+      print_str = "Victory."
+    else if (state_h<=MIN_HEURISTIC)
+      print_str = "Defeat."
+    else if (leaf_h>=MAX_HEURISTIC)
       print_str += ' (Expecting Victory within '+l.toString()+' moves.)'
     else if (leaf_h<=MIN_HEURISTIC)
       print_str += ' (Expecting Defeat within '+l.toString()+' moves.)'
