@@ -1,13 +1,17 @@
 /////////////////////////////////////////////////////////////////////////////////////
 // GLOBALS //
 /////////////////////////////////////////////////////////////////////////////////////
+
+//Game
 const BOARD_DIM = 8
 const NUM_PEICES = 12
+
+//AI
 const MAX_HEURISTIC = 100000
 const MIN_HEURISTIC = -100000
 const MAX_DIST = 10
 const DEFAULT_SEARCH_LIMIT = 7
-const HOME_BONUS = 3
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -474,7 +478,7 @@ class Game_AI
     var cluster_bonus_white = this.cluster_bonus(state,"white",enemies)
     var advance_bonus_black = this.advance_bonus(state,"black",friendlies)
     var advance_bonus_white = this.advance_bonus(state,"white",enemies)
-    var h = 20*delta_peices + cluster_bonus_black - cluster_bonus_white + advance_bonus_black - advance_bonus_white
+    var h = 20*delta_peices + cluster_bonus_black - cluster_bonus_white + Math.pow(advance_bonus_black,2) - Math.pow(advance_bonus_white,2)
 
     return h
   }
@@ -529,17 +533,23 @@ class Game_AI
   depth_limited_minimax(state,turn,l=DEFAULT_SEARCH_LIMIT,alpha=MIN_HEURISTIC,beta=MAX_HEURISTIC)
   {
 
-        //depth exceeded or game has ended
-        if(l<=0 || this.game.is_goal_state(state))
+        //depth exceeded
+        if(l<=0)
           return [this.heuristic(state),state]
 
         //get children_states and check if a goal state was accomplished
         var children_states = this.game.next_states(state,turn)
 
-        //if no children, we have no moves, this is also goal_state
+        //if no children, we have no moves, this is a final state
         if(children_states.length == 0)
-          return [this.heuristic(state),state]
+        {
+          if(turn=="black")
+            return [MIN_HEURISTIC,null]
+          else
+            return [MAX_HEURISTIC,null]
+        }
 
+        //otherwise continue with minimax
         if(turn=="black")
           return this.maximizing_agent(children_states,l,alpha,beta)
 
@@ -552,15 +562,30 @@ class Game_AI
   //take the game state after white move, prints the board after subsequent black move
   make_move(state,l=DEFAULT_SEARCH_LIMIT)
   {
-    var state_h = this.heuristic(state)
+    //run minimax
     var move = this.depth_limited_minimax(state,"black",l)
     var leaf_h = move[0]
     var move_state = move[1]
+
+    //if state is null, indicates, game is over, return the board as is
+    if(move_state == null)
+    {
+      if (leaf_h>=MAX_HEURISTIC)
+        console.log("Victory: AI wins.")
+      else
+        console.log("Defeat: AI loses.")
+      
+      //print state as is and return it
+      this.game.print_state(state)
+      return state  
+    }
+
+    //get more heuristics for output
+    var state_h = this.heuristic(state)
     var move_h = this.heuristic(move_state)
-    var leaf_state = move[1]
-    var print_str = state_h.toString()+'->'+move_h.toString()
 
     //output
+    var print_str = state_h.toString()+'->'+move_h.toString()
     if (state_h>=MAX_HEURISTIC)
       print_str = "Victory."
     else if (state_h<=MIN_HEURISTIC)
