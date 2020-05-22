@@ -5,6 +5,9 @@ class Assignment_Three_Scene extends Scene_Component
         if( !context.globals.has_controls   ) 
           context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) ); 
 
+
+        
+
         context.globals.graphics_state.camera_transform = Mat4.look_at( Vec.of( 0,10,20 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) );
         this.initial_camera_location = Mat4.inverse( context.globals.graphics_state.camera_transform );
 
@@ -35,6 +38,11 @@ class Assignment_Three_Scene extends Scene_Component
           }
         this.lights = [ new Light( Vec.of( 5,-10,5,1 ), Color.of( 0, 1, 1, 1 ), 1000 ) ];
         this.attached = null
+
+        this.checker_locations = [Vec.of(5,0,0,1), Vec.of(-5,0,0,1)];
+        this.checker_picker = new Pick_Checker(context, control_box.parentElement.insertCell(),this.checker_locations);
+        context.register_scene_component(this.checker_picker);
+
       }
     make_control_panel()            // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
       { this.key_triggered_button( "View solar system",  [ "0" ], () => this.attached = () => this.initial_camera_location );
@@ -55,14 +63,18 @@ class Assignment_Three_Scene extends Scene_Component
                          new Light( Vec.of(0,-10,0,1 ), Color.of(0,0,0,1), 10**5),
                          new Light( Vec.of(0,10,0,1 ), Color.of(0,0,0,1), 10**5),
                          new Light( Vec.of(0,0,-10,1 ), Color.of(0,0,0,1), 10**5),
-                         new Light( Vec.of(0,0,10,1 ), Color.of(0,0,0,1), 10**5)];
+                         new Light( Vec.of(0,0,10,1 ), Color.of(0,0,0,1), 10**5),
+                         ];
+
 
         const white_color = Color.of(.906,.725,.514,1)
         const black_color = Color.of(.396,.141,0,1)
         const wood_color  = Color.of(.251, .149, .110, 1)
+        
 
-        this.shapes.checker.draw(graphics_state,Mat4.translation(Vec.of(5,0,0,1)),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}))
-        this.shapes.checker.draw(graphics_state,Mat4.translation(Vec.of(-5,0,0,1)),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:black_color}))
+        this.checker_locations = this.checker_picker.checker_locations;
+        this.shapes.checker.draw(graphics_state,Mat4.translation(this.checker_locations[0]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}))
+        this.shapes.checker.draw(graphics_state,Mat4.translation(this.checker_locations[1]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:black_color}))
         this.shapes.frame.draw(graphics_state, Mat4.translation(Vec.of(0,0,0,1)).times(Mat4.scale(Vec.of(50, 50, 50))), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:wood_color}))
       }
   }

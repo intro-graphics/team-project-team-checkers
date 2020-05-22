@@ -327,7 +327,7 @@ class Movement_Controls extends Scene_Component    // Movement_Controls is a Sce
                                                    // to help you explore what's in it.
   constructor( context, control_box, canvas = context.canvas )
     { super( context, control_box );
-      [ this.context, this.roll, this.look_around_locked, this.invert ] = [ context, 0, true, true ];                  // Data members
+      [ this.context, this.roll, this.look_around_locked, this.invert] = [ context, 0, true, true, false ];                  // Data members
       [ this.thrust, this.pos, this.z_axis ] = [ Vec.of( 0,0,0 ), Vec.of( 0,0,0 ), Vec.of( 0,0,0 ) ];
                                                  // The camera matrix is not actually stored here inside Movement_Controls; instead, track
                                                  // an external matrix to modify. This target is a reference (made with closures) kept
@@ -413,7 +413,7 @@ class Movement_Controls extends Scene_Component    // Movement_Controls is a Sce
     { const m = this.speed_multiplier * this. meters_per_frame,
             r = this.speed_multiplier * this.radians_per_frame;
       this.first_person_flyaround( dt * r, dt * m );     // Do first-person.  Scale the normal camera aiming speed by dt for smoothness.
-      if( this.mouse.anchor )                            // Also apply third-person "arcball" camera mode if a mouse drag is occurring.  
+      if( this.mouse.anchor)                            // Also apply third-person "arcball" camera mode if a mouse drag is occurring.  
         this.third_person_arcball( dt * r);           
       
       const inv = Mat4.inverse( this.target() );
@@ -612,6 +612,118 @@ class Shape_From_File extends Shape {
             this.copy_onto_graphics_card( this.gl );
             this.ready = true;
         }
-        draw( graphics_state, model_transform, material )       // Cancel all attempts to draw the shape before it loads.
+    draw( graphics_state, model_transform, material )       // Cancel all attempts to draw the shape before it loads.
         { if( this.ready ) super.draw( graphics_state, model_transform, material );   }
+}
+
+window.Pick_Checker = window.classes.Pick_Checker=
+class Pick_Checker extends Scene_Component{
+  constructor( context, control_box, checker_locations, canvas = context.canvas)
+    { super( context, control_box );
+      this.context = context;
+      this.checker_locations = checker_locations;   
+
+      this.ray;            
+
+      //this.camera = function() { return context.globals.movement_controls_target() }
+      //context.globals.movement_controls_target = function(t) { return context.globals.graphics_state.camera_transform };
+      
+      // *** Mouse controls: ***
+      this.mouse = { "from_center": Vec.of( 0,0 ) };
+      const mouse_position = ( e, rect = canvas.getBoundingClientRect() ) => 
+                                   Vec.of( e.clientX - (rect.left + rect.right)/2, e.clientY - (rect.bottom + rect.top)/2 );
+                                        // Set up mouse response.  The last one stops us from reacting if the mouse leaves the canvas.
+      console.log(mouse_position);
+      document.addEventListener( "mouseup",   e => { this.mouse.anchor = undefined; } );
+      canvas  .addEventListener( "mousedown", e => { e.preventDefault(); this.mouse.anchor      = mouse_position(e); } );
+      canvas  .addEventListener( "mousemove", e => { e.preventDefault(); this.mouse.from_center = mouse_position(e); } );
+      canvas  .addEventListener( "mouseout",  e => { if( !this.mouse.anchor ) this.mouse.from_center.scale(0) } );  
     }
+  show_explanation( document_element ) { }
+  make_control_panel()                                                        // This function of a scene sets up its keyboard shortcuts.
+    {
+    }
+  check_for_checker(graphics_state)
+    {
+      //CALCULATE RAY VECTOR
+      //convert screen coordinates from viewport to normalized
+      var normal_space = Vec.of(this.mouse.anchor[0]/540, -this.mouse.anchor[1]/230);
+
+      var perspective_vec = Vec.of(normal_space[0], normal_space[1], -1, 1);
+      var eye_vec = Mat4.inverse(graphics_state.projection_transform).times(perspective_vec);
+      eye_vec = Vec.of(eye_vec[0], eye_vec[1], -1, 0);
+      var ray_vec = Mat4.inverse(graphics_state.camera_transform);
+      ray_vec = ray_vec.times(eye_vec).to3();
+
+      var div = Math.sqrt(ray_vec[0] * ray_vec[0] +  ray_vec[1] * ray_vec[1] + ray_vec[2]*ray_vec[2]);
+      ray_vec = Vec.of(ray_vec[0]/div, ray_vec[1]/div, ray_vec[2]/div);
+
+      //get x,y,z coords of camera as ray origin
+      var start = Mat4.inverse(graphics_state.camera_transform).times(Vec.of(0,0,0,1)).to3();
+      var closest_intersect = 0;
+      var closest_index = -1;
+      
+      //check for intersection with checkers - spherical hit boxes
+      for(var i = 0; i < this.checker_locations.length; i++){
+        var center = Vec.of(this.checker_locations[i][0], this.checker_locations[i][1], this.checker_locations[i][2]);
+        var b = ray_vec.dot(start.minus(center));
+        var c = ((start.minus(center)).dot(start.minus(center))) - 2 * 2;
+        var d = b * b - c;
+
+        //if intersection found
+        if(d >= 0){
+          var sqrt_term = Math.sqrt(d);
+          var post = -b + sqrt_term;
+          var negt = -b - sqrt_term;
+          
+          //if previous intersection has been found, compare 
+          if(closest_index >= 0){
+            if(post < closest_intersect){
+              closest_intersect = post;
+              closest_index = i;
+            }
+            if(negt < closest_intersect){
+              closest_intersect = negt;
+              closest_index = i;
+            }
+          }
+          //if no previous intersection, set this as the closest.
+          else{
+            if(post < closest_intersect)
+              closest_intersect = post;
+            else
+              closest_intersect = negt;
+
+            closest_index = i;
+          }
+        }
+      }
+      
+      return closest_index;
+      }
+
+ 
+  display( graphics_state)    // Camera code starts here.
+    {
+      if(this.mouse.anchor){
+        console.log("mouse clicked" + this.mouse.anchor);
+        this.context.globals.checker = true;
+        var i = this.check_for_checker(graphics_state);
+        if(i > -1){
+        //base off of y value (height remains constant)
+          //var camera_coords = Mat4.inverse(graphics_state.camera_transform).times(Vec.of(0,0,0,1)).to3();
+          //var perspective_vec = Vec.of(this.mouse.anchor[0], this.mouse.anchor[1], -1, 1);
+          //var eye_vec = Mat4.inverse(graphics_state.projection_transform).times(perspective_vec);
+          //eye_vec = Vec.of(eye_vec[0], eye_vec[1], -1, 0);
+          //var ray_vec = Mat4.inverse(graphics_state.camera_transform);
+          // ray_vec = ray_vec.times(eye_vec).to3();
+
+          //var ratio = (this.checker_locations[i][1] - camera_coords[1])/ray_vec[1];
+          this.checker_locations[i] = Vec.of(this.checker_locations[i][0] + 1, this.checker_locations[i][1], this.checker_locations[i][2], 1);
+        }
+      }
+      else
+        this.context.globals.checker = false;
+             
+    }
+}
