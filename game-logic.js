@@ -2,10 +2,12 @@
 // GLOBALS //
 /////////////////////////////////////////////////////////////////////////////////////
 const BOARD_DIM = 8
-const MAX_HEURISTIC = 10000
-const MIN_HEURISTIC = -10000
+const NUM_PEICES = 12
+const MAX_HEURISTIC = 100000
+const MIN_HEURISTIC = -100000
 const MAX_DIST = 10
 const DEFAULT_SEARCH_LIMIT = 7
+const HOME_BONUS = 3
 
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -91,6 +93,11 @@ class Game
   {
     for (var i=0; i<states.length; i++)
      this.print_state(states[i])
+  }
+
+  inBounds(r,c)
+  {
+    return (r>=0 && r<BOARD_DIM && c>=0 && c<BOARD_DIM)
   }
 
   isFriendly(state,turn,r,c)
@@ -179,10 +186,10 @@ class Game
     var eat_states = []
 
     //bounds check
-    var top_left_allowed = (is_queen||turn=='white')&&(c-2>=0)&&(r-2>=0)
-    var bottom_left_allowed = (is_queen||turn=='black')&&(c-2>=0)&&(r+2<BOARD_DIM)
-    var top_right_allowed = (is_queen||turn=='white')&&(c+2<BOARD_DIM)&&(r-2>=0)
-    var bottom_right_allowed = (is_queen||turn=='black')&&(c+2<BOARD_DIM)&&(r+2<BOARD_DIM)
+    var top_left_allowed = (is_queen||turn=='white')&&this.inBounds(r-2,c-2)
+    var bottom_left_allowed = (is_queen||turn=='black')&&this.inBounds(r+2,c-2)
+    var top_right_allowed = (is_queen||turn=='white')&&this.inBounds(r-2,c+2)
+    var bottom_right_allowed = (is_queen||turn=='black')&&this.inBounds(r+2,c+2)
 
     //eat top left
     if(top_left_allowed && this.isEnemy(state,turn,r-1,c-1) && this.isEmpty(state,r-2,c-2))
@@ -238,10 +245,10 @@ class Game
     var move_states = []
 
     //bounds check
-    var top_left_allowed = (is_queen||turn=='white')&&(c-1>=0)&&(r-1>=0)
-    var bottom_left_allowed = (is_queen||turn=='black')&&(c-1>=0)&&(r+1<BOARD_DIM)
-    var top_right_allowed = (is_queen||turn=='white')&&(c+1<BOARD_DIM)&&(r-1>=0)
-    var bottom_right_allowed = (is_queen||turn=='black')&&(c+1<BOARD_DIM)&&(r+1<BOARD_DIM)
+    var top_left_allowed = (is_queen||turn=='white')&&this.inBounds(r-1,c-1)
+    var bottom_left_allowed = (is_queen||turn=='black')&&this.inBounds(r+1,c-1)
+    var top_right_allowed = (is_queen||turn=='white')&&this.inBounds(r-1,c+1)
+    var bottom_right_allowed = (is_queen||turn=='black')&&this.inBounds(r+1,c+1)
 
     //top left
     if(top_left_allowed && this.isEmpty(state,r-1,c-1))
@@ -349,118 +356,187 @@ class Game_AI
     return [friendlies,enemies]
   }
 
-  //enemy peices left (helper for heuristic)
-  peices_up(friendlies,enemies)
+  //bonus for being up peices, especially if the enemy count is low
+  peices_up_bonus(black_coords,white_coords)
   {
-    return friendlies.length - enemies.length
+    return (black_coords.length - white_coords.length) * (NUM_PEICES-white_coords.length)
   }
 
-  //shortest dist between enemies
-  position_bonus(state,turn,friendlies)
+  //bonus for holding home row
+  home_bonus(black_coords,white_coords)
+  {
+    var bonus = 0
+    for (var i=0; i<black_coords.length; i++)
+      if (black_coords[i][0] == 0)
+        bonus++
+
+    for (var i=0; i<white_coords.length; i++)
+      if (white_coords[i][0] == 0)
+        bonus--
+
+    return bonus
+  }
+
+  //bonus for advancing towards a queen
+  advance_bonus(state,turn,friendlies)
   {
     var bonus = 0
     for(var i=0; i<friendlies.length; i++)
     {
       var r = friendlies[i][0]
       var c = friendlies[i][1]
-      //bonus for being away from center
-      bonus += Math.round(Math.abs(r-3.5) + Math.abs(c-3.5))
+      var isQueen = this.game.isQueen(state,turn,r,c)
 
-      //bonus for being close to queen
-      if(this.game.isQueen(state,turn,r,c))
-        bonus += 8
-      else if(turn == 'white')
-        bonus += (BOARD_DIM - 1) - r
-      else
+      if(isQueen)
+        bonus += BOARD_DIM
+
+      else if(turn=="black")
         bonus += r
+
+      else
+        bonus += BOARD_DIM - 1 - r
+    }
+    return bonus
+  }
+
+  //bonus for being close to allies
+  cluster_bonus(state,turn,friendlies)
+  {
+    var bonus = 0
+    for(var i=0; i<friendlies.length; i++)
+    {
+      var r = friendlies[i][0]
+      var c = friendlies[i][1]
+      var isQueen = this.game.isQueen(state,turn,r,c)
+
+      //nearby peices are stronger together
+      var backed_top_left = (this.game.inBounds(r-1,c-1) && this.game.isFriendly(state,turn,r-1,c-1))
+      var backed_top_right = (this.game.inBounds(r-1,c+1) && this.game.isFriendly(state,turn,r-1,c+1))
+      var backed_bottom_left = (this.game.inBounds(r+1,c-1) && this.game.isFriendly(state,turn,r+1,c-1))
+      var backed_bottom_right = (this.game.inBounds(r+1,c+1) && this.game.isFriendly(state,turn,r+1,c+1))
+
+      if(isQueen || turn=='black')
+      {
+        if(backed_top_left)
+          bonus++
+        if(backed_top_right)
+          bonus++
+      }
+
+      if(isQueen || turn=='white')
+      {
+        if(backed_bottom_left)
+          bonus++
+        if(backed_bottom_right)
+          bonus++
+      }
     }
     return bonus
   }
 
 
-  //heuristic: return number of enemy peices left + shortest distance to an enemy
-  heuristic(state,turn)
+  //heuristic for black: return number of enemy peices left + shortest distance to an enemy
+  heuristic(state)
   {
     if(state == null)
       return MIN_HEURISTIC
 
-    var peice_coords = this.find_peices(state,turn)
+    var peice_coords = this.find_peices(state,"black")
     var friendlies = peice_coords[0]
     var enemies = peice_coords[1]
 
     if(enemies.length < 0)
       return MAX_HEURISTIC
 
-    var delta_peices = this.peices_up(friendlies,enemies)
-    var position_bonus = this.position_bonus(state,turn,friendlies)
-    var h = 20*delta_peices + position_bonus
+    var delta_peices = this.peices_up_bonus(friendlies,enemies)
+    var cluster_bonus_black = this.cluster_bonus(state,"black",friendlies)
+    var cluster_bonus_white = this.cluster_bonus(state,"white",enemies)
+    var advance_bonus_black = this.advance_bonus(state,"black",friendlies)
+    var advance_bonus_white = this.advance_bonus(state,"white",enemies)
+    var h = 20*delta_peices + cluster_bonus_black - cluster_bonus_white + advance_bonus_black - advance_bonus_white
 
     return h
   }
 
-  //helper for limited_depth_minimax_wrapper
-  limited_depth_minimax(state,turn,l,max_l)
+  maximizing_agent(children_states,l,alpha=MIN_HEURISTIC,beta=MAX_HEURISTIC)
+  {
+    var leaf;
+    var leaf_h;
+    var best_state = null;
+    for (var i=0; i<children_states.length; i++)
+    {
+      leaf = this.depth_limited_minimax(children_states[i],"white",l-1,alpha,beta)
+      leaf_h = leaf[0]
+      //check if better value was found
+      if(leaf_h>alpha)
+      {
+        alpha = leaf_h
+        best_state = children_states[i]
+        //minimizing agent will never chose alpha
+        if(alpha > beta)
+          break;
+      }
+    }
+    return [alpha,best_state]
+  }
+
+  minimizing_agent(children_states,l,alpha=MIN_HEURISTIC,beta=MAX_HEURISTIC)
+  {
+    var leaf;
+    var leaf_h;
+    var best_state = null;
+    for (var i=0; i<children_states.length; i++)
+    {
+      leaf = this.depth_limited_minimax(children_states[i],"black",l-1,alpha,beta)
+      leaf_h = leaf[0]
+      //check if better value was found
+      if(leaf_h<beta)
+      {
+        beta = leaf_h
+        best_state = children_states[i]
+        //minimizing agent will never chose alpha
+        if(alpha > beta)
+          break;
+      }
+    }
+    return [beta,best_state]
+  }
+
+
+  //runs minimax search with alpha beta pruning for l moves ahead
+  //returns [heuristic for leaf l moves ahead, next state in path to reach that leaf]
+  depth_limited_minimax(state,turn,l=DEFAULT_SEARCH_LIMIT,alpha=MIN_HEURISTIC,beta=MAX_HEURISTIC)
   {
 
         //depth exceeded or game has ended
         if(l<=0 || this.game.is_goal_state(state))
-          if(l == max_l)
-            return state
-          else
-          {
-            //this.game.print_state(state)
-            return this.heuristic(state,turn)
-          }
+          return [this.heuristic(state),state]
 
         //get children_states and check if a goal state was accomplished
         var children_states = this.game.next_states(state,turn)
 
+        if(turn=="black")
+          return this.maximizing_agent(children_states,l,alpha,beta)
 
-        //switch turns
-        var next_turn;
-        if (turn == 'white')
-          next_turn = 'black'
         else
-          next_turn = 'white'
+          return this.minimizing_agent(children_states,l,alpha,beta)
 
-        //current best
-        var best_state = null
-        var best_h = MIN_HEURISTIC
-
-        //for each child recurse deeper
-        for(var i =0; i<children_states.length; i++)
-        {
-          var found_h = this.limited_depth_minimax(children_states[i],next_turn,l-1,l)
-          if (found_h > best_h){
-            best_state = children_states[i]
-            best_h = found_h
-          }
-        }
-        if(l == max_l)
-          return best_state
-        else
-          return best_h
   }
 
-  //search
-  limited_depth_minimax_wrapper(state,l)
-  {
-    var best = this.limited_depth_minimax(state,'black',l,l)
-    //console.log("---")
-    return best
-  }
 
   //take the game state after white move, prints the board after subsequent black move
-  make_move(state)
+  make_move(state,l=DEFAULT_SEARCH_LIMIT)
   {
-    var new_state = this.limited_depth_minimax_wrapper(state,DEFAULT_SEARCH_LIMIT)
-    var h_black_old = this.heuristic(state,"black")
-    var h_black_new = this.heuristic(new_state,"black")
-    var h_white_old = this.heuristic(state,"white")
-    var h_white_new = this.heuristic(new_state,"white")
-
-    console.log("Black:",h_black_old,"->",h_black_new,"White:",h_white_old,"->",h_white_new)
-    this.game.print_state(new_state)
+    var state_h = this.heuristic(state)
+    var move = this.depth_limited_minimax(state,"black",l)
+    var leaf_h = move[0]
+    var move_state = move[1]
+    var move_h = this.heuristic(move_state)
+    var leaf_state = move[1]
+    var print_str = state_h.toString()+'->'+move_h.toString()+' (Expected score in '+l.toString()+' moves: '+leaf_h.toString()+')'
+    console.log(print_str)
+    this.game.print_state(move_state)
+    return move_state
   }
 
 }
