@@ -667,7 +667,7 @@ class Pick_Checker extends Scene_Component{
       for(var i = 0; i < this.checker_locations.length; i++){
         var center = Vec.of(this.checker_locations[i][0], this.checker_locations[i][1], this.checker_locations[i][2]);
         var b = ray_vec.dot(start.minus(center));
-        var c = ((start.minus(center)).dot(start.minus(center))) - 2 * 2;
+        var c = ((start.minus(center)).dot(start.minus(center))) - 3 * 3;
         var d = b * b - c;
 
         //if intersection found
