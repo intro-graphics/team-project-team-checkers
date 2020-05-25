@@ -30,8 +30,8 @@ var test_state1 = [['b', 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
 
 //becoming a queen
 var test_state2 = [[ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
-                   [ 0 , 0 ,'b', 0 ,'w', 0 , 0 , 0 ],
-                   [ 0 ,'w', 0 , 0 , 0 , 0 , 0,  0 ],
+                   [ 0 , 0 ,'b', 0 ,'b', 0 , 0 , 0 ],
+                   [ 0 ,'w', 0 , 0 , 0 ,'w', 0,  0 ],
                    [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
                    [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
                    [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
@@ -40,13 +40,13 @@ var test_state2 = [[ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
 
 //queen eating backwards
 var test_state3 = [[ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
-                   [ 0 , 0 , 0 , 0 , 0 , 0 , 0 ,'w'],
-                   [ 0 , 0 ,'w', 0 , 0 , 0 , 0,  0 ],
                    [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
-                   [ 0 , 0 , 0 , 0 ,'w', 0 , 0 , 0 ],
+                   [ 0 , 0 ,'b', 0 , 0 , 0 , 0 , 0 ],
                    [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
-                   [ 0 , 0 , 0 , 0 , 0 , 0 ,'w', 0 ],
-                   [ 0 , 0 , 0 , 0 , 0 , 0 , 0 ,'k']];
+                   [ 0 , 0 , 0 , 0 ,'b', 0 ,'b', 0 ],
+                   [ 0 , 0 , 0 , 0 , 0 ,'w', 0 , 0 ],
+                   [ 0 , 0 , 0 , 0 , 0 , 0 ,'b', 0 ],
+                   [ 0 , 0 , 0 , 0 , 0 , 0 , 0 ,'w']];
 
 //queen chosing to take most peices
 var test_state4 = [[ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],
@@ -90,13 +90,17 @@ class Game
                       ['w', 0 ,'w', 0 ,'w', 0, 'w', 0 ],
                       [ 0 ,'w', 0 ,'w', 0 ,'w', 0, 'w'],
                       ['w', 0 ,'w', 0 ,'w', 0, 'w', 0 ]];
-    this.turn = "white"
+
+    this.player_coords = null
+    this.player_states = null
+    this.ai = new Game_AI(this)
   }
 
   print_state(state)
   {
-    var print_str = ""
+    var print_str = " \t0 1 2 3 4 5 6 7\n\n"
     for(var r=0; r<BOARD_DIM; r++){
+      print_str += r.toString() + "\t"
       for(var c=0; c<BOARD_DIM; c++){
         var item = state[r][c]
         if(item == 0)
@@ -108,6 +112,79 @@ class Game
       print_str += "\n"
     }
     console.log(print_str)
+  }
+
+  equal_states(s1,s2)
+  {
+    return_val = true
+    for(var r=0; r<BOARD_DIM; r++)
+      for(var c=0; c<BOARD_DIM; c++)
+        if(s1[r][c] == s2[r][c])
+          return false
+
+  return true
+  }
+
+  //we get player move as two coordinates (r1,r2,c1,c2)
+  //if move is invalid, do nothing
+  //if move is valid, let AI opponent play following that move
+  //then update the game state to ai's move and wait for white
+  //return board after white move and board after black move
+  player_move(r1,c1,r2,c2)
+  {
+
+    //see all move coordinates (we only want to find them once)
+    if(this.player_coords == null)
+    {
+      this.player_coords = this.next_states(this.gameState,"white",true,false)
+      this.player_states = this.next_states(this.gameState,"white",false,false)
+    }
+
+    //if no move coords, we've lost
+    if(this.player_coords.length == 0)
+    {
+      console.log("Defeat: AI wins.")
+      return
+    }
+
+    //check if [[r1,c1],[r2,c2]] is a valid move
+    var invalid_move = true
+    var move_index;
+    for(var i=0; i<this.player_coords.length; i++)
+      if(this.player_coords[i][0][0]==r1 && this.player_coords[i][0][1]==c1 && this.player_coords[i][1][0]==r2 && this.player_coords[i][1][1]==c2)
+      {
+        invalid_move = false
+        move_index = i
+        break
+      }
+    if(invalid_move)
+    {
+      console.log("Invalid move.")
+      return
+    }
+
+
+    //verify given move and set resulting state to move_state
+    var move_state = this.player_states[move_index]
+    this.player_coords = null
+
+    //print the heuristic (for black) change
+    this.ai.print_delta_h(this.gameState,move_state)
+    this.print_state(move_state)
+
+    //update gameState
+    this.gameState = move_state
+
+    //if more eating can be done, don't let AI play yet
+
+    //if eating was done
+    if(Math.abs(r2-r1) == 2)
+      if(this.get_eat_states(this.gameState, "white", r2,c2, this.isQueen(this.gameState,"white",r2,c2), false).length > 0)
+        return
+
+
+    //let opponent play
+    this.gameState = this.ai.ai_move(move_state)
   }
 
 
@@ -201,7 +278,7 @@ class Game
 
 
   //checkes all eating moves (Recursively if needed) from r,c to see all eating moves possible
-  get_eat_states(state, turn, r,c, is_queen)
+  get_eat_states(state, turn, r,c, is_queen, get_coords=false, recurse=true)
   {
 
     //all the eating moves from r,c
@@ -216,51 +293,80 @@ class Game
     //eat top left
     if(top_left_allowed && this.isEnemy(state,turn,r-1,c-1) && this.isEmpty(state,r-2,c-2))
     {
-      var ate_state = this.eat(state,r,c,r-2,c-2)
-      var more_states = this.get_eat_states(ate_state,turn,r-2,c-2,is_queen)
-      if (more_states.length == 0)
-        eat_states.push(ate_state)
+      if(get_coords)
+        eat_states.push([[r,c],[r-2,c-2]])
       else
-        eat_states=eat_states.concat(more_states)
+      {
+        var ate_state = this.eat(state,r,c,r-2,c-2)
+        var more_states = [];
+        if(recurse)
+          more_states = this.get_eat_states(ate_state,turn,r-2,c-2,is_queen,get_coords)
+        if (more_states.length == 0)
+            eat_states.push(ate_state)
+        else
+          eat_states=eat_states.concat(more_states)
+      }
     }
 
     //bottom left
     if(bottom_left_allowed && this.isEnemy(state,turn,r+1,c-1) && this.isEmpty(state,r+2,c-2))
     {
-      var ate_state = this.eat(state,r,c,r+2,c-2)
-      var more_states = this.get_eat_states(ate_state,turn,r+2,c-2,is_queen)
-      if (more_states.length == 0)
-        eat_states.push(ate_state)
+      if(get_coords)
+        eat_states.push([[r,c],[r+2,c-2]])
       else
-        eat_states=eat_states.concat(more_states)
+      {
+        var ate_state = this.eat(state,r,c,r+2,c-2)
+        var more_states = [];
+        if(recurse)
+          more_states = this.get_eat_states(ate_state,turn,r+2,c-2,is_queen,get_coords)
+        if (more_states.length == 0)
+            eat_states.push(ate_state)
+        else
+          eat_states=eat_states.concat(more_states)
+      }
     }
 
     //top right
     if(top_right_allowed && this.isEnemy(state,turn,r-1,c+1) && this.isEmpty(state,r-2,c+2))
     {
-      var ate_state = this.eat(state,r,c,r-2,c+2)
-      var more_states = this.get_eat_states(ate_state,turn,r-2,c+2,is_queen)
-      if (more_states.length == 0)
-        eat_states.push(ate_state)
+      if(get_coords)
+        eat_states.push([[r,c],[r-2,c+2]])
       else
-        eat_states=eat_states.concat(more_states)
+      {
+        var ate_state = this.eat(state,r,c,r-2,c+2)
+        var more_states = [];
+        if(recurse)
+          more_states = this.get_eat_states(ate_state,turn,r-2,c+2,is_queen,get_coords)
+        if (more_states.length == 0)
+            eat_states.push(ate_state)
+        else
+          eat_states=eat_states.concat(more_states)
+      }
     }
 
     //bottom right
     if(bottom_right_allowed && this.isEnemy(state,turn,r+1,c+1) && this.isEmpty(state,r+2,c+2))
     {
-      var ate_state = this.eat(state,r,c,r+2,c+2)
-      var more_states = this.get_eat_states(ate_state,turn,r+2,c+2,is_queen)
-      if (more_states.length == 0)
-        eat_states.push(ate_state)
+      if(get_coords)
+        eat_states.push([[r,c],[r+2,c+2]])
       else
-        eat_states=eat_states.concat(more_states)
+      {
+        var ate_state = this.eat(state,r,c,r+2,c+2)
+        var more_states = [];
+        if(recurse)
+          more_states = this.get_eat_states(ate_state,turn,r+2,c+2,is_queen,get_coords)
+        if (more_states.length == 0)
+            eat_states.push(ate_state)
+        else
+          eat_states=eat_states.concat(more_states)
+      }
     }
+
     return eat_states
  }
 
    //checkes all 1-peice moves from r,c
-  get_move_states(state, turn, r,c, is_queen)
+  get_move_states(state, turn, r,c, is_queen, get_coords=false)
   {
 
     //all the eating moves from r,c
@@ -274,19 +380,39 @@ class Game
 
     //top left
     if(top_left_allowed && this.isEmpty(state,r-1,c-1))
-      move_states.push(this.swap(state,r,c,r-1,c-1))
+    {
+      if(get_coords)
+        move_states.push([[r,c],[r-1,c-1]])
+      else
+        move_states.push(this.swap(state,r,c,r-1,c-1))
+    }
 
     //bottom left
     if(bottom_left_allowed && this.isEmpty(state,r+1,c-1))
-      move_states.push(this.swap(state,r,c,r+1,c-1))
+    {
+      if(get_coords)
+        move_states.push([[r,c],[r+1,c-1]])
+      else
+        move_states.push(this.swap(state,r,c,r+1,c-1))
+    }
 
     //top right
     if(top_right_allowed && this.isEmpty(state,r-1,c+1))
-      move_states.push(this.swap(state,r,c,r-1,c+1))
+    {
+      if(get_coords)
+        move_states.push([[r,c],[r-1,c+1]])
+      else
+        move_states.push(this.swap(state,r,c,r-1,c+1))
+    }
 
     //bottom right
     if(bottom_right_allowed && this.isEmpty(state,r+1,c+1))
-      move_states.push(this.swap(state,r,c,r+1,c+1))
+    {
+      if(get_coords)
+        move_states.push([[r,c],[r+1,c+1]])
+      else
+        move_states.push(this.swap(state,r,c,r+1,c+1))
+    }
 
     return move_states
   }
@@ -310,7 +436,7 @@ class Game
   }
 
 
-  next_states(state, turn)
+  next_states(state, turn, get_coords = false, recurse = true)
   {
 
     //all next_states where we move
@@ -328,7 +454,7 @@ class Game
           continue;
 
         //eating
-        var l = this.get_eat_states(state,turn,r,c,this.isQueen(state,turn,r,c))
+        var l = this.get_eat_states(state,turn,r,c,this.isQueen(state,turn,r,c),get_coords, recurse)
         eat_states=eat_states.concat(l)
 
         //if the option to eat exists, we must eat. We dont need non-eating moves
@@ -336,7 +462,7 @@ class Game
           continue;
 
         //moving
-        var l = this.get_move_states(state,turn,r,c,this.isQueen(state,turn,r,c))
+        var l = this.get_move_states(state,turn,r,c,this.isQueen(state,turn,r,c),get_coords)
         move_states = move_states.concat(l)
         }
       }
@@ -347,6 +473,7 @@ class Game
     else
       return move_states;
   }
+
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -483,6 +610,12 @@ class Game_AI
     return h
   }
 
+  //print function for white
+  print_delta_h(state1,state2)
+  {
+    console.log("Player: "+this.heuristic(state1).toString()+'->'+this.heuristic(state2).toString())
+  }
+
   maximizing_agent(children_states,l,alpha=MIN_HEURISTIC,beta=MAX_HEURISTIC)
   {
     var leaf;
@@ -560,24 +693,28 @@ class Game_AI
 
 
   //take the game state after white move, prints the board after subsequent black move
-  make_move(state,l=DEFAULT_SEARCH_LIMIT)
+  //return null if game over, otherwise return new gameboard
+  ai_move(state,l=DEFAULT_SEARCH_LIMIT)
   {
     //run minimax
     var move = this.depth_limited_minimax(state,"black",l)
     var leaf_h = move[0]
     var move_state = move[1]
 
+    //return value is true iff game is over
+    var return_val = false
+
     //if state is null, indicates, game is over, return the board as is
     if(move_state == null)
     {
       if (leaf_h>=MAX_HEURISTIC)
-        console.log("Victory: AI wins.")
+        console.log("Defeat: AI wins.")
       else
-        console.log("Defeat: AI loses.")
-      
+        console.log("Victory: AI loses.")
+
       //print state as is and return it
       this.game.print_state(state)
-      return state  
+      return null
     }
 
     //get more heuristics for output
@@ -586,10 +723,16 @@ class Game_AI
 
     //output
     var print_str = state_h.toString()+'->'+move_h.toString()
-    if (state_h>=MAX_HEURISTIC)
-      print_str = "Victory."
-    else if (state_h<=MIN_HEURISTIC)
-      print_str = "Defeat."
+    if (move_h>=MAX_HEURISTIC)
+    {
+      console.log("Defeat: AI wins.")
+      return null
+    }
+    else if (move_h<=MIN_HEURISTIC)
+    {
+      console.log("Victory: AI loses.")
+      return null
+    }
     else if (leaf_h>=MAX_HEURISTIC)
       print_str += ' (Expecting Victory within '+l.toString()+' moves.)'
     else if (leaf_h<=MIN_HEURISTIC)
@@ -598,7 +741,7 @@ class Game_AI
       print_str += ' (Expected score in '+l.toString()+' moves: '+leaf_h.toString()+')'
 
     //log to console
-    console.log(print_str)
+    console.log("AI: "+print_str)
     this.game.print_state(move_state)
     //return the new board
     return move_state
@@ -606,5 +749,4 @@ class Game_AI
 
 }
 
-gam = new Game()
-ai = new Game_AI(gam)
+g = new Game()
