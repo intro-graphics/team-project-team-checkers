@@ -413,8 +413,10 @@ class Movement_Controls extends Scene_Component    // Movement_Controls is a Sce
     { const m = this.speed_multiplier * this. meters_per_frame,
             r = this.speed_multiplier * this.radians_per_frame;
       this.first_person_flyaround( dt * r, dt * m );     // Do first-person.  Scale the normal camera aiming speed by dt for smoothness.
-      if( this.mouse.anchor)                            // Also apply third-person "arcball" camera mode if a mouse drag is occurring.  
-        this.third_person_arcball( dt * r);           
+      if( this.mouse.anchor){           
+        if(!this.context.globals.checker)                 // Also apply third-person "arcball" camera mode if a mouse drag is occurring.  
+          this.third_person_arcball( dt * r);   
+      }        
       
       const inv = Mat4.inverse( this.target() );
       this.pos = inv.times( Vec.of( 0,0,0,1 ) ); this.z_axis = inv.times( Vec.of( 0,0,1,0 ) );      // Log some values.
@@ -634,7 +636,7 @@ class Pick_Checker extends Scene_Component{
                                    Vec.of( e.clientX - (rect.left + rect.right)/2, e.clientY - (rect.bottom + rect.top)/2 );
                                         // Set up mouse response.  The last one stops us from reacting if the mouse leaves the canvas.
       console.log(mouse_position);
-      document.addEventListener( "mouseup",   e => { this.mouse.anchor = undefined; } );
+      canvas.addEventListener( "mouseup",   e => { this.mouse.anchor = undefined; } );
       canvas  .addEventListener( "mousedown", e => { e.preventDefault(); this.mouse.anchor      = mouse_position(e); } );
       canvas  .addEventListener( "mousemove", e => { e.preventDefault(); this.mouse.from_center = mouse_position(e); } );
       canvas  .addEventListener( "mouseout",  e => { if( !this.mouse.anchor ) this.mouse.from_center.scale(0) } );  
@@ -647,7 +649,7 @@ class Pick_Checker extends Scene_Component{
     {
       //CALCULATE RAY VECTOR
       //convert screen coordinates from viewport to normalized
-      var normal_space = Vec.of(this.mouse.anchor[0]/540, -this.mouse.anchor[1]/230);
+      var normal_space = Vec.of(this.mouse.anchor[0]/540, -this.mouse.anchor[1]/300);
 
       var perspective_vec = Vec.of(normal_space[0], normal_space[1], -1, 1);
       var eye_vec = Mat4.inverse(graphics_state.projection_transform).times(perspective_vec);
@@ -665,9 +667,9 @@ class Pick_Checker extends Scene_Component{
       
       //check for intersection with checkers - spherical hit boxes
       for(var i = 0; i < this.checker_locations.length; i++){
-        var center = Vec.of(this.checker_locations[i][0], this.checker_locations[i][1], this.checker_locations[i][2]);
+        var center = Vec.of(this.checker_locations[i][0], this.checker_locations[i][1] + .5, this.checker_locations[i][2]);
         var b = ray_vec.dot(start.minus(center));
-        var c = ((start.minus(center)).dot(start.minus(center))) - 3 * 3;
+        var c = ((start.minus(center)).dot(start.minus(center))) - 4.0 * 4.0;
         var d = b * b - c;
 
         //if intersection found
@@ -705,22 +707,43 @@ class Pick_Checker extends Scene_Component{
  
   display( graphics_state)    // Camera code starts here.
     {
-      if(this.mouse.anchor){
-        console.log("mouse clicked" + this.mouse.anchor);
-        this.context.globals.checker = true;
-        var i = this.check_for_checker(graphics_state);
-        if(i > -1){
-        //base off of y value (height remains constant)
-          //var camera_coords = Mat4.inverse(graphics_state.camera_transform).times(Vec.of(0,0,0,1)).to3();
-          //var perspective_vec = Vec.of(this.mouse.anchor[0], this.mouse.anchor[1], -1, 1);
-          //var eye_vec = Mat4.inverse(graphics_state.projection_transform).times(perspective_vec);
-          //eye_vec = Vec.of(eye_vec[0], eye_vec[1], -1, 0);
-          //var ray_vec = Mat4.inverse(graphics_state.camera_transform);
-          // ray_vec = ray_vec.times(eye_vec).to3();
+      if(this.mouse.anchor){  //clicked
+        
+        //calculate ray trace
+        var camera_coords = Mat4.inverse(graphics_state.camera_transform).times(Vec.of(0,0,0,1)).to3();
+        var normal_space = Vec.of(this.mouse.anchor[0]/540.0, -this.mouse.anchor[1]/300.0);
 
-          //var ratio = (this.checker_locations[i][1] - camera_coords[1])/ray_vec[1];
-          this.checker_locations[i] = Vec.of(this.checker_locations[i][0] + 1, this.checker_locations[i][1], this.checker_locations[i][2], 1);
+        var perspective_vec = Vec.of(normal_space[0], normal_space[1], -1, 1);
+        var eye_vec = Mat4.inverse(graphics_state.projection_transform).times(perspective_vec);
+        eye_vec = Vec.of(eye_vec[0], eye_vec[1], -1, 0);
+        var ray_vec = Mat4.inverse(graphics_state.camera_transform);
+        ray_vec = ray_vec.times(eye_vec).to3();
+  
+        var div = Math.sqrt(ray_vec[0] * ray_vec[0] +  ray_vec[1] * ray_vec[1] + ray_vec[2]*ray_vec[2]);
+        ray_vec = Vec.of(ray_vec[0]/div, ray_vec[1]/div, ray_vec[2]/div);
+
+
+
+        //check for checker 
+        var i = this.check_for_checker(graphics_state);
+        if(i > -1){                       //checker found
+          //base off of y value (height remains constant)
+          
+          this.context.globals.checker = true;
+
+          
+          //this.checker_locations[i] = Vec.of(camera_coords[0] + ray_vec[0] * ratio, this.checker_locations[i][1], camera_coords[2] + ray_vec[2] * ratio);
+          this.context.globals.last_clicked_checker = i;
         }
+        else{                             //no checker found
+          if(this.context.globals.last_clicked_checker > -1){
+            var ratio = (this.checker_locations[this.context.globals.last_clicked_checker][1] + .5 - camera_coords[1])/ray_vec[1];
+            this.checker_locations[this.context.globals.last_clicked_checker] = Vec.of(camera_coords[0] + ray_vec[0] * ratio, this.checker_locations[this.context.globals.last_clicked_checker][1], camera_coords[2] + ray_vec[2] * ratio);
+          }
+           this.context.globals.last_clicked_checker = -1;
+           this.mouse.anchor = undefined;
+        }
+
       }
       else
         this.context.globals.checker = false;
