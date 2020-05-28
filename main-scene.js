@@ -8,7 +8,7 @@ class Assignment_Three_Scene extends Scene_Component
 
         
 
-        context.globals.graphics_state.camera_transform = Mat4.look_at( Vec.of( 0,10,20 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) );
+        context.globals.graphics_state.camera_transform = Mat4.look_at( Vec.of( 0,100,20 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) );
         this.initial_camera_location = Mat4.inverse( context.globals.graphics_state.camera_transform );
 
         const r = context.width/context.height;
@@ -39,9 +39,21 @@ class Assignment_Three_Scene extends Scene_Component
         this.lights = [ new Light( Vec.of( 5,-10,5,1 ), Color.of( 0, 1, 1, 1 ), 1000 ) ];
         this.attached = null
 
-        this.checker_locations = [Vec.of(5,0,0,1), Vec.of(-5,0,0,1)];
+        this.checker_locations = [
+                          //white color pieces (near-side of the board/player)
+                          Vec.of(-28,0,28,1),  Vec.of(-12,0,28,1), Vec.of(4,0,28,1), Vec.of(20,0,28,1),
+                          Vec.of(-20,0,20,1), Vec.of(-4,0,20,1), Vec.of(12,0,20,1), Vec.of(28,0,20,1),
+                          Vec.of(-28,0,12,1),  Vec.of(-12,0,12,1), Vec.of(4,0,12,1), Vec.of(20,0,12,1),
+                          
+                          //black color pieces (far-side of the board/computer)
+                          Vec.of(-20,0,-12,1), Vec.of(-4,0,-12,1), Vec.of(12,0,-12,1), Vec.of(28,0,-12,1),
+                          Vec.of(-28,0,-20,1),  Vec.of(-12,0,-20,1), Vec.of(4,0,-20,1), Vec.of(20,0,-20,1),
+                          Vec.of(-20,0,-28,1), Vec.of(-4,0,-28,1), Vec.of(12,0,-28,1), Vec.of(28,0,-28,1)
+                          ];
+
         this.checker_picker = new Pick_Checker(context, control_box.parentElement.insertCell(),this.checker_locations);
         context.register_scene_component(this.checker_picker);
+        this.white_checker_count = 12;
 
       }
     make_control_panel()            // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
@@ -72,10 +84,38 @@ class Assignment_Three_Scene extends Scene_Component
         const wood_color  = Color.of(.251, .149, .110, 1)
         
 
-        this.checker_locations = this.checker_picker.checker_locations;
-        this.shapes.checker.draw(graphics_state,Mat4.translation(this.checker_locations[0]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}))
-        this.shapes.checker.draw(graphics_state,Mat4.translation(this.checker_locations[1]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:black_color}))
-        this.shapes.frame.draw(graphics_state, Mat4.translation(Vec.of(0,0,0,1)).times(Mat4.scale(Vec.of(50, 50, 50))), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:wood_color}))
+        //get player move from checker picker
+        if(this.checker_picker.move_checker){
+
+          //round movement to most matching checker board square
+          var player_move = Vec.of(this.checker_picker.move_checker[0], this.checker_picker.move_checker[1], this.checker_picker.move_checker[2]);
+          player_move = player_move.plus(Vec.of(4, 4, 4));
+          player_move = Vec.of(Math.round(player_move[0]/8) * 8, Math.round(player_move[1]/8) * 8, Math.round(player_move[2]/8) * 8);
+          player_move = player_move.minus(Vec.of(4, 4, 4));
+          
+          let checker_piece_selected = this.checker_picker.move_checker[3];
+          //check if move is within board:
+          if(player_move[0] > -35 && player_move[0] < 35 && player_move[2] > -35 && player_move[2] < 35){
+            //check if move is diagonal:
+            let slope = (this.checker_locations[checker_piece_selected][0] - player_move[0])/(this.checker_locations[checker_piece_selected][2] - player_move[2]);
+            if(slope  == 1 || slope == -1)
+              this.checker_locations[checker_piece_selected] = player_move;
+          }
+          
+
+
+        }
+        
+        for(var i = 0; i < this.white_checker_count; i++){
+         this.shapes.checker.draw(graphics_state,Mat4.translation(this.checker_locations[i]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}))
+        }
+
+        for(var i = this.white_checker_count; i < this.checker_locations.length; i++){
+         this.shapes.checker.draw(graphics_state,Mat4.translation(this.checker_locations[i]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:black_color}))
+        }
+        
+
+        this.shapes.frame.draw(graphics_state, Mat4.translation(Vec.of(3,0,0,1)).times(Mat4.scale(Vec.of(50, 50, 50))), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:wood_color}))
       }
   }
 

@@ -625,7 +625,8 @@ class Pick_Checker extends Scene_Component{
       this.context = context;
       this.checker_locations = checker_locations;   
 
-      this.ray;            
+      this.ray;
+      this.move_checker = undefined;            
 
       //this.camera = function() { return context.globals.movement_controls_target() }
       //context.globals.movement_controls_target = function(t) { return context.globals.graphics_state.camera_transform };
@@ -738,7 +739,8 @@ class Pick_Checker extends Scene_Component{
         else{                             //no checker found
           if(this.context.globals.last_clicked_checker > -1){
             var ratio = (this.checker_locations[this.context.globals.last_clicked_checker][1] + .5 - camera_coords[1])/ray_vec[1];
-            this.checker_locations[this.context.globals.last_clicked_checker] = Vec.of(camera_coords[0] + ray_vec[0] * ratio, this.checker_locations[this.context.globals.last_clicked_checker][1], camera_coords[2] + ray_vec[2] * ratio);
+            this.move_checker = Vec.of(camera_coords[0] + ray_vec[0] * ratio, this.checker_locations[this.context.globals.last_clicked_checker][1], camera_coords[2] + ray_vec[2] * ratio, this.context.globals.last_clicked_checker);
+            //this.checker_locations[this.context.globals.last_clicked_checker] = Vec.of(camera_coords[0] + ray_vec[0] * ratio, this.checker_locations[this.context.globals.last_clicked_checker][1], camera_coords[2] + ray_vec[2] * ratio);
           }
            this.context.globals.last_clicked_checker = -1;
            this.mouse.anchor = undefined;
