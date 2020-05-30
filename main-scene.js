@@ -134,7 +134,7 @@ class Assignment_Three_Scene extends Scene_Component
           
           let checker_piece_selected = this.checker_picker.move_checker[3];
 
-          //check if move is within board:
+          //if game is still active
           if(board){
 
             //pass player move to game 
@@ -169,11 +169,6 @@ class Assignment_Three_Scene extends Scene_Component
                        this.checker_picker.move_checker[3] = white_pieces.length;
                        move_found = true;
                     }
-                    //if last checker moved was eaten
-                    if(move_found = false){
-                        this.checker_picker.move_checker = undefined;
-                    }
-
                   }
                   
                   //add to player_checkers
@@ -188,6 +183,12 @@ class Assignment_Three_Scene extends Scene_Component
                 }
               }
             }
+            
+              //if last checker moved was eaten
+              if(move_found = false){
+                  this.checker_picker.move_checker = undefined;
+              } 
+
           }
 
             this.player_checkers = white_pieces;
