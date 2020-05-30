@@ -111,7 +111,7 @@ class Game
     if(this.player_coords.length == 0)
     {
       console.log("Defeat: AI wins.")
-      return
+      return false;
     }
 
     //check if [[r1,c1],[r2,c2]] is a valid move
@@ -127,7 +127,7 @@ class Game
     if(invalid_move)
     {
       console.log("Invalid move.")
-      return
+      return false;
     }
 
 
@@ -152,6 +152,7 @@ class Game
 
     //let opponent play
     this.gameState = this.ai.ai_move(move_state)
+    return true;
   }
 
 

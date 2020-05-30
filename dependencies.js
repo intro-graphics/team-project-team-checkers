@@ -626,7 +626,8 @@ class Pick_Checker extends Scene_Component{
       this.checker_locations = checker_locations;   
 
       this.ray;
-      this.move_checker = undefined;            
+      this.move_checker = undefined; 
+      this.last_clicked_checker = -1;           
 
       //this.camera = function() { return context.globals.movement_controls_target() }
       //context.globals.movement_controls_target = function(t) { return context.globals.graphics_state.camera_transform };
@@ -734,15 +735,15 @@ class Pick_Checker extends Scene_Component{
 
           
           //this.checker_locations[i] = Vec.of(camera_coords[0] + ray_vec[0] * ratio, this.checker_locations[i][1], camera_coords[2] + ray_vec[2] * ratio);
-          this.context.globals.last_clicked_checker = i;
+          this.last_clicked_checker = i;
         }
         else{                             //no checker found
-          if(this.context.globals.last_clicked_checker > -1){
-            var ratio = (this.checker_locations[this.context.globals.last_clicked_checker][1] + .5 - camera_coords[1])/ray_vec[1];
-            this.move_checker = Vec.of(camera_coords[0] + ray_vec[0] * ratio, this.checker_locations[this.context.globals.last_clicked_checker][1], camera_coords[2] + ray_vec[2] * ratio, this.context.globals.last_clicked_checker);
+          if(this.last_clicked_checker > -1){
+            var ratio = (this.checker_locations[this.last_clicked_checker][1] + .5 - camera_coords[1])/ray_vec[1];
+            this.move_checker = Vec.of(camera_coords[0] + ray_vec[0] * ratio, this.checker_locations[this.last_clicked_checker][1], camera_coords[2] + ray_vec[2] * ratio, this.last_clicked_checker);
             //this.checker_locations[this.context.globals.last_clicked_checker] = Vec.of(camera_coords[0] + ray_vec[0] * ratio, this.checker_locations[this.context.globals.last_clicked_checker][1], camera_coords[2] + ray_vec[2] * ratio);
           }
-           this.context.globals.last_clicked_checker = -1;
+           this.last_clicked_checker = -1;
            this.mouse.anchor = undefined;
         }
 

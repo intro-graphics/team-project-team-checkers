@@ -37,23 +37,54 @@ class Assignment_Three_Scene extends Scene_Component
 
           }
         this.lights = [ new Light( Vec.of( 5,-10,5,1 ), Color.of( 0, 1, 1, 1 ), 1000 ) ];
-        this.attached = null
+        this.attached = null;
 
-        this.checker_locations = [
-                          //white color pieces (near-side of the board/player)
-                          Vec.of(-28,0,28,1),  Vec.of(-12,0,28,1), Vec.of(4,0,28,1), Vec.of(20,0,28,1),
-                          Vec.of(-20,0,20,1), Vec.of(-4,0,20,1), Vec.of(12,0,20,1), Vec.of(28,0,20,1),
-                          Vec.of(-28,0,12,1),  Vec.of(-12,0,12,1), Vec.of(4,0,12,1), Vec.of(20,0,12,1),
-                          
+        this.board_locations = [
+                          [Vec.of(-28,0,-28,1), Vec.of(-20,0,-28,1), Vec.of(-12,0,-28,1), Vec.of(-4,0,-28,1), Vec.of(4,0,-28,1), Vec.of(12,0,-28,1), Vec.of(20,0,-28,1), Vec.of(28,0,-28,1)],
+                          [Vec.of(-28,0,-20,1), Vec.of(-20,0,-20,1), Vec.of(-12,0,-20,1), Vec.of(-4,0,-20,1), Vec.of(4,0,-20,1), Vec.of(12,0,-20,1), Vec.of(20,0,-20,1), Vec.of(28,0,-20,1)],
+                          [Vec.of(-28,0,-12,1), Vec.of(-20,0,-12,1), Vec.of(-12,0,-12,1), Vec.of(-4,0,-12,1), Vec.of(4,0,-12,1), Vec.of(12,0,-12,1), Vec.of(20,0,-12,1), Vec.of(28,0,-12,1)],
+                          [Vec.of(-28,0,-4,1), Vec.of(-20,0,-4,1), Vec.of(-12,0,-4,1), Vec.of(-4,0,-4,1), Vec.of(4,0,-4,1), Vec.of(12,0,-4,1), Vec.of(20,0,-4,1), Vec.of(28,0,-4,1)],
+                          [Vec.of(-28,0,4,1), Vec.of(-20,0,4,1), Vec.of(-12,0,4,1), Vec.of(-4,0,4,1), Vec.of(4,0,4,1), Vec.of(12,0,4,1), Vec.of(20,0,4,1), Vec.of(28,0,4,1)],
+                          [Vec.of(-28,0,12,1), Vec.of(-20,0,12,1), Vec.of(-12,0,12,1), Vec.of(-4,0,12,1), Vec.of(4,0,12,1), Vec.of(12,0,12,1), Vec.of(20,0,12,1), Vec.of(28,0,12,1)],
+                          [Vec.of(-28,0,20,1), Vec.of(-20,0,20,1), Vec.of(-12,0,20,1), Vec.of(-4,0,20,1), Vec.of(4,0,20,1), Vec.of(12,0,20,1), Vec.of(20,0,20,1), Vec.of(28,0,20,1)],
+                          [Vec.of(-28,0,28,1), Vec.of(-20,0,28,1), Vec.of(-12,0,28,1), Vec.of(-4,0,28,1), Vec.of(4,0,28,1), Vec.of(12,0,28,1), Vec.of(20,0,28,1), Vec.of(28,0,28,1)]
+                          ];
+
+
+                          /*
+                           -28,-20,-12,-4,  4 , 8 , 12, 28 :x  z:
+
+                          [ 0 ,'b', 0 ,'b', 0 ,'b', 0, 'b'], -28
+                          ['b', 0 ,'b', 0 ,'b', 0, 'b', 0 ], -20
+                          [ 0 ,'b', 0 ,'b', 0 ,'b', 0, 'b'], -12
+                          [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ], -4
+                          [ 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 ],  4
+                          ['w', 0 ,'w', 0 ,'w', 0, 'w', 0 ],  12
+                          [ 0 ,'w', 0 ,'w', 0 ,'w', 0, 'w'],  20
+                          ['w', 0 ,'w', 0 ,'w', 0, 'w', 0 ]   28
+
                           //black color pieces (far-side of the board/computer)
                           Vec.of(-20,0,-12,1), Vec.of(-4,0,-12,1), Vec.of(12,0,-12,1), Vec.of(28,0,-12,1),
                           Vec.of(-28,0,-20,1),  Vec.of(-12,0,-20,1), Vec.of(4,0,-20,1), Vec.of(20,0,-20,1),
-                          Vec.of(-20,0,-28,1), Vec.of(-4,0,-28,1), Vec.of(12,0,-28,1), Vec.of(28,0,-28,1)
+                          Vec.of(-20,0,-28,1), Vec.of(-4,0,-28,1), Vec.of(12,0,-28,1), Vec.of(28,0,-28,1),
+
+                          //white color pieces (near-side of the board/player)
+                          Vec.of(-28,0,28,1),  Vec.of(-12,0,28,1), Vec.of(4,0,28,1), Vec.of(20,0,28,1),
+                          Vec.of(-20,0,20,1), Vec.of(-4,0,20,1), Vec.of(12,0,20,1), Vec.of(28,0,20,1),
+                          Vec.of(-28,0,12,1),  Vec.of(-12,0,12,1), Vec.of(4,0,12,1), Vec.of(20,0,12,1)
+
+
+                          */
+                          
+        this.player_checkers = [
+                          Vec.of(-28,0,28,1),  Vec.of(-12,0,28,1), Vec.of(4,0,28,1), Vec.of(20,0,28,1),
+                          Vec.of(-20,0,20,1), Vec.of(-4,0,20,1), Vec.of(12,0,20,1), Vec.of(28,0,20,1),
+                          Vec.of(-28,0,12,1),  Vec.of(-12,0,12,1), Vec.of(4,0,12,1), Vec.of(20,0,12,1)
                           ];
 
-        this.checker_picker = new Pick_Checker(context, control_box.parentElement.insertCell(),this.checker_locations);
+        this.checker_picker = new Pick_Checker(context, control_box.parentElement.insertCell(),this.player_checkers);
+        this.g = new Game();
         context.register_scene_component(this.checker_picker);
-        this.white_checker_count = 12;
 
       }
     make_control_panel()            // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
@@ -66,6 +97,10 @@ class Assignment_Three_Scene extends Scene_Component
         this.key_triggered_button( "Attach to planet 5", [ "5" ], () => this.attached = () => this.planet_5 );
         this.key_triggered_button( "Attach to moon",     [ "m" ], () => this.attached = () => this.moon     );
       }
+    convert_to_row_col(coordinates){
+      //takes vec2
+      return Vec.of((coordinates[0] + 28)/8, (coordinates[1] + 28)/8);
+    }
     display(graphics_state)
       { graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
         const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
@@ -82,6 +117,10 @@ class Assignment_Three_Scene extends Scene_Component
         const white_color = Color.of(.906,.725,.514,1)
         const black_color = Color.of(.396,.141,0,1)
         const wood_color  = Color.of(.251, .149, .110, 1)
+
+
+        var board = this.g.gameState;
+        var valid_move = false;
         
 
         //get player move from checker picker
@@ -89,30 +128,70 @@ class Assignment_Three_Scene extends Scene_Component
 
           //round movement to most matching checker board square
           var player_move = Vec.of(this.checker_picker.move_checker[0], this.checker_picker.move_checker[1], this.checker_picker.move_checker[2]);
-          player_move = player_move.plus(Vec.of(4, 4, 4));
+          player_move = player_move.plus(Vec.of(4, 0, 4));
           player_move = Vec.of(Math.round(player_move[0]/8) * 8, Math.round(player_move[1]/8) * 8, Math.round(player_move[2]/8) * 8);
-          player_move = player_move.minus(Vec.of(4, 4, 4));
+          player_move = player_move.minus(Vec.of(4, 0, 4));
           
           let checker_piece_selected = this.checker_picker.move_checker[3];
+
           //check if move is within board:
-          if(player_move[0] > -35 && player_move[0] < 35 && player_move[2] > -35 && player_move[2] < 35){
-            //check if move is diagonal:
-            let slope = (this.checker_locations[checker_piece_selected][0] - player_move[0])/(this.checker_locations[checker_piece_selected][2] - player_move[2]);
-            if(slope  == 1 || slope == -1)
-              this.checker_locations[checker_piece_selected] = player_move;
+          if(board){
+
+            //pass player move to game 
+            var current_position = this.player_checkers[checker_piece_selected];
+            if(current_position){
+              var start = this.convert_to_row_col(Vec.of(current_position[0], current_position[2]));
+              var dest = this.convert_to_row_col(Vec.of(player_move[0], player_move[2]));
+              valid_move = this.g.player_move(start[1], start[0],dest[1],dest[0]);
+
+            }
           }
+        }
           
+        board = this.g.gameState;
+        var move_found = false;
 
+          if(board){
 
-        }
-        
-        for(var i = 0; i < this.white_checker_count; i++){
-         this.shapes.checker.draw(graphics_state,Mat4.translation(this.checker_locations[i]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}))
-        }
+            //get new positions from board
+            var white_pieces = [];
+            for(var i = 0; i < 8; i++){
+              for(var j = 0; j < 8; j++){
 
-        for(var i = this.white_checker_count; i < this.checker_locations.length; i++){
-         this.shapes.checker.draw(graphics_state,Mat4.translation(this.checker_locations[i]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:black_color}))
-        }
+                //white piece found
+                if(board[i][j] == 'w' || board[i][j] == 'q'){
+
+                  //if this is the piece that moved, set checker_piece_selected to the index in player_checkers
+                  if(valid_move){
+
+                    //set index of move_checker to new position
+                    if(i == dest[1] && j == dest[0]){
+                       this.checker_picker.move_checker[3] = white_pieces.length;
+                       move_found = true;
+                    }
+                    //if last checker moved was eaten
+                    if(move_found = false){
+                        this.checker_picker.move_checker = undefined;
+                    }
+
+                  }
+                  
+                  //add to player_checkers
+                  white_pieces.push(this.board_locations[i][j]);
+                  //draw
+                  this.shapes.checker.draw(graphics_state,Mat4.translation(this.board_locations[i][j]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}));
+                }
+
+                //black piece found, draw
+                else if(board[i][j] == 'b' || board[i][j] == 'k'){
+                  this.shapes.checker.draw(graphics_state,Mat4.translation(this.board_locations[i][j]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:black_color}));
+                }
+              }
+            }
+          }
+
+            this.player_checkers = white_pieces;
+            this.checker_picker.checker_locations = this.player_checkers;
         
 
         this.shapes.frame.draw(graphics_state, Mat4.translation(Vec.of(3,0,0,1)).times(Mat4.scale(Vec.of(50, 50, 50))), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:wood_color}))
