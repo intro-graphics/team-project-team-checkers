@@ -1,12 +1,12 @@
-window.Assignment_Three_Scene = window.classes.Assignment_Three_Scene =
-class Assignment_Three_Scene extends Scene_Component
+window.Checkers_Scene = window.classes.Checkers_Scene =
+class Checkers_Scene extends Scene_Component
   { constructor( context, control_box )     // The scene begins by requesting the camera, shapes, and materials it will need.
       { super(   context, control_box );    // First, include a secondary Scene that provides movement controls:
-        if( !context.globals.has_controls   ) 
-          context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) ); 
+        if( !context.globals.has_controls   )
+          context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
 
 
-        
+
 
         context.globals.graphics_state.camera_transform = Mat4.look_at( Vec.of( 0,100,20 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) );
         this.initial_camera_location = Mat4.inverse( context.globals.graphics_state.camera_transform );
@@ -14,7 +14,7 @@ class Assignment_Three_Scene extends Scene_Component
         const r = context.width/context.height;
         context.globals.graphics_state.projection_transform = Mat4.perspective( Math.PI/4, r, .1, 1000 );
 
-        const shapes = { 
+        const shapes = {
                          sphere1: new ( Subdivision_Sphere.prototype.make_flat_shaded_version() )(1),
                          sphere2: new ( Subdivision_Sphere.prototype.make_flat_shaded_version() )(2),
                          sphere3: new Subdivision_Sphere(3),
@@ -24,7 +24,7 @@ class Assignment_Three_Scene extends Scene_Component
                          tile   : new Square()
                        }
         this.submit_shapes( context, shapes );
-                                     
+
                                      // Make some Material objects available to you:
         this.materials =
           { test:     context.get_instance( Phong_Shader ).material( Color.of( 1,1,0,1 ), { ambient:.2 } ),
@@ -76,7 +76,7 @@ class Assignment_Three_Scene extends Scene_Component
 
 
                           */
-                          
+
         this.player_checkers = [
                           Vec.of(-28,0,28,1),  Vec.of(-12,0,28,1), Vec.of(4,0,28,1), Vec.of(20,0,28,1),
                           Vec.of(-20,0,20,1), Vec.of(-4,0,20,1), Vec.of(12,0,20,1), Vec.of(28,0,20,1),
@@ -87,17 +87,19 @@ class Assignment_Three_Scene extends Scene_Component
         this.g = new Game();
         context.register_scene_component(this.checker_picker);
 
+        this.player_view = Mat4.rotation(-Math.PI/6.0,Vec.of(1,0,0)).times(Mat4.translation([0,10,100]))
+        this.opponent_view = Mat4.rotation(Math.PI/6.0,Vec.of(1,0,0)).times(Mat4.translation([0,10,-100])).times(Mat4.rotation(Math.PI,Vec.of(0,1,0)))
       }
+
     make_control_panel()            // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
-      { this.key_triggered_button( "View solar system",  [ "0" ], () => this.attached = () => this.initial_camera_location );
-        this.new_line();
-        this.key_triggered_button( "Attach to planet 1", [ "1" ], () => this.attached = () => this.planet_1 );
-        this.key_triggered_button( "Attach to planet 2", [ "2" ], () => this.attached = () => this.planet_2 ); this.new_line();
-        this.key_triggered_button( "Attach to planet 3", [ "3" ], () => this.attached = () => this.planet_3 );
-        this.key_triggered_button( "Attach to planet 4", [ "4" ], () => this.attached = () => this.planet_4 ); this.new_line();
-        this.key_triggered_button( "Attach to planet 5", [ "5" ], () => this.attached = () => this.planet_5 );
-        this.key_triggered_button( "Attach to moon",     [ "m" ], () => this.attached = () => this.moon     );
-      }
+    {
+      this.key_triggered_button( "Top View",  [ "0" ], () => this.attached = () => this.initial_camera_location );
+      this.new_line();
+      this.key_triggered_button( "Player View",  [ "1" ], () => this.attached = () => this.player_view );
+      this.new_line();
+      this.key_triggered_button( "Opponent View",  [ "2" ], () => this.attached = () => this.opponent_view);
+    }
+
     convert_to_row_col(coordinates){
       //takes vec2
       return Vec.of((coordinates[0] + 28)/8, (coordinates[1] + 28)/8);
@@ -105,7 +107,7 @@ class Assignment_Three_Scene extends Scene_Component
     display(graphics_state)
       { graphics_state.lights = this.lights;        // Use the lights stored in this.lights.
         const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
-            
+
         graphics_state.lights = [new Light( Vec.of(-10,0,0,1 ), Color.of(0,0,0,1), 10**5),
                          new Light( Vec.of(10,0,0,1 ), Color.of(0,0,0,1), 10**5),
                          new Light( Vec.of(0,-10,0,1 ), Color.of(0,0,0,1), 10**5),
@@ -124,7 +126,7 @@ class Assignment_Three_Scene extends Scene_Component
 
         var board = this.g.gameState;
         var valid_move = false;
-        
+
 
         //get player move from checker picker
         if(this.checker_picker.move_checker){
@@ -134,13 +136,13 @@ class Assignment_Three_Scene extends Scene_Component
           player_move = player_move.plus(Vec.of(4, 0, 4));
           player_move = Vec.of(Math.round(player_move[0]/8) * 8, Math.round(player_move[1]/8) * 8, Math.round(player_move[2]/8) * 8);
           player_move = player_move.minus(Vec.of(4, 0, 4));
-          
+
           let checker_piece_selected = this.checker_picker.move_checker[3];
 
           //if game is still active
           if(board){
 
-            //pass player move to game 
+            //pass player move to game
             var current_position = this.player_checkers[checker_piece_selected];
             if(current_position){
               var start = this.convert_to_row_col(Vec.of(current_position[0], current_position[2]));
@@ -150,7 +152,7 @@ class Assignment_Three_Scene extends Scene_Component
             }
           }
         }
-          
+
         board = this.g.gameState;
         var move_found = false;
 
@@ -173,31 +175,37 @@ class Assignment_Three_Scene extends Scene_Component
                        move_found = true;
                     }
                   }
-                  
+
                   //add to player_checkers
                   white_pieces.push(this.board_locations[i][j]);
                   //draw
                   this.shapes.checker.draw(graphics_state,Mat4.translation(this.board_locations[i][j]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}));
+                  //if queen draw another checker peice
+                  if(board[i][j] == 'q')
+                    this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}));
                 }
 
                 //black piece found, draw
                 else if(board[i][j] == 'b' || board[i][j] == 'k'){
                   this.shapes.checker.draw(graphics_state,Mat4.translation(this.board_locations[i][j]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:black_color}));
+                  //if queen draw another checker peice
+                  if(board[i][j] == 'k')
+                    this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:black_color}));
                 }
               }
             }
-            
+
               //if last checker moved was eaten
               if(move_found = false){
                   this.checker_picker.move_checker = undefined;
-              } 
+              }
 
           }
 
             this.player_checkers = white_pieces;
             this.checker_picker.checker_locations = this.player_checkers;
-        
-        
+
+
         //draw the board
         var color = false; //false = white, true = black board piece
         for(var i = 0; i < 8; i++){
@@ -214,6 +222,13 @@ class Assignment_Three_Scene extends Scene_Component
         }
         this.shapes.frame.draw(graphics_state, Mat4.translation(Vec.of(3,1,.25,1)).times(Mat4.scale(Vec.of(46.5, 46.5, 46.5))), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:wood_color}));
 
+        //attach
+        if(this.attached != null)
+        {
+          var new_camera_transform = Mat4.inverse(this.attached().times(Mat4.translation([0,0,0])))
+          graphics_state.camera_transform = new_camera_transform.map( (x,i) => Vec.from( graphics_state.camera_transform[i] ).mix( x, 0.1 ) )
+        }
+
       }
   }
 
@@ -225,10 +240,10 @@ class Ring_Shader extends Shader              // Subclasses of Shader each store
 { material() { return { shader: this } }      // Materials here are minimal, without any settings.
   map_attribute_name_to_buffer_name( name )       // The shader will pull single entries out of the vertex arrays, by their data fields'
     {                                             // names.  Map those names onto the arrays we'll pull them from.  This determines
-                                                  // which kinds of Shapes this Shader is compatible with.  Thanks to this function, 
-                                                  // Vertex buffers in the GPU can get their pointers matched up with pointers to 
+                                                  // which kinds of Shapes this Shader is compatible with.  Thanks to this function,
+                                                  // Vertex buffers in the GPU can get their pointers matched up with pointers to
                                                   // attribute names in the GPU.  Shapes and Shaders can still be compatible even
-                                                  // if some vertex data feilds are unused. 
+                                                  // if some vertex data feilds are unused.
       return { object_space_pos: "positions" }[ name ];      // Use a simple lookup table.
     }
     // Define how to synchronize our JavaScript's variables to the GPU's:
@@ -250,7 +265,7 @@ class Ring_Shader extends Shader              // Subclasses of Shader each store
         uniform mat4 model_transform;
         uniform mat4 projection_camera_transform;
         void main()
-        { 
+        {
           //we want to color based on object_space_pos Not the camera transformed position
           center =  vec4(0,0,0,1.0);
           position = vec4(object_space_pos, 1.0);
@@ -261,7 +276,7 @@ class Ring_Shader extends Shader              // Subclasses of Shader each store
   fragment_glsl_code()           // ********* FRAGMENT SHADER *********
     { return `
         void main()
-        { 
+        {
             float d;
             bool color_on;
             d = distance(center,position);
@@ -270,16 +285,16 @@ class Ring_Shader extends Shader              // Subclasses of Shader each store
               gl_FragColor = vec4(0.73, 0.40, 0.16, 1.0);
             else
               gl_FragColor = vec4(0, 0, 0, 1.0);
-            
+
         }`;                  // TODO:  Complete the main function of the fragment shader (Extra Credit Part II).
-    } 
+    }
 }
 
 window.Grid_Sphere = window.classes.Grid_Sphere =
-class Grid_Sphere extends Shape           // With lattitude / longitude divisions; this means singularities are at 
+class Grid_Sphere extends Shape           // With lattitude / longitude divisions; this means singularities are at
   { constructor( rows, columns, texture_range )             // the mesh's top and bottom.  Subdivision_Sphere is a better alternative.
       { super( "positions", "normals", "texture_coords" );
-        
+
 
                       // TODO:  Complete the specification of a sphere with lattitude and longitude lines
                       //        (Extra Credit Part III)

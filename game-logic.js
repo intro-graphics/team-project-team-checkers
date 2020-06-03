@@ -716,5 +716,3 @@ class Game_AI
   }
 
 }
-
-g = new Game()
