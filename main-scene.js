@@ -176,13 +176,36 @@ class Checkers_Scene extends Scene_Component
                     }
                   }
 
+                  if(this.checker_picker.last_clicked_checker > -1){
+                    let clicked = this.checker_picker.last_clicked_checker;
+                    let clicked_loc = this.convert_to_row_col(Vec.of(this.player_checkers[clicked][0], this.player_checkers[clicked][2]));
+                    if(clicked_loc[1] == i && clicked_loc[0] == j){
+                        //draw
+                      this.shapes.checker.draw(graphics_state,Mat4.translation(this.board_locations[i][j]),this.materials.max_amb.override({ambient:0.90,diffusivity:0.90, color:white_color}));
+                      //if queen draw another checker peice
+                      if(board[i][j] == 'q')
+                        this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.90,diffusivity:0.90, color:white_color}));
+                    
+                    }
+                    else{
+                    //draw
+                    this.shapes.checker.draw(graphics_state,Mat4.translation(this.board_locations[i][j]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}));
+                    //if queen draw another checker peice
+                    if(board[i][j] == 'q')
+                      this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}));
+                     }
+                  }
+                  else{
+                      //draw
+                      this.shapes.checker.draw(graphics_state,Mat4.translation(this.board_locations[i][j]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}));
+                      //if queen draw another checker peice
+                      if(board[i][j] == 'q')
+                        this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}));
+                  }
+
                   //add to player_checkers
                   white_pieces.push(this.board_locations[i][j]);
-                  //draw
-                  this.shapes.checker.draw(graphics_state,Mat4.translation(this.board_locations[i][j]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}));
-                  //if queen draw another checker peice
-                  if(board[i][j] == 'q')
-                    this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}));
+                  
                 }
 
                 //black piece found, draw
