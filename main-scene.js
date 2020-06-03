@@ -20,7 +20,8 @@ class Assignment_Three_Scene extends Scene_Component
                          sphere3: new Subdivision_Sphere(3),
                          sphere4: new Subdivision_Sphere(4),
                          checker: new Checker_Peice(20,20),
-                         frame  : new Shape_From_File("assets/frame.obj")
+                         frame  : new Shape_From_File("assets/frame.obj"),
+                         tile   : new Square()
                        }
         this.submit_shapes( context, shapes );
                                      
@@ -117,6 +118,8 @@ class Assignment_Three_Scene extends Scene_Component
         const white_color = Color.of(.906,.725,.514,1)
         const black_color = Color.of(.396,.141,0,1)
         const wood_color  = Color.of(.251, .149, .110, 1)
+        const white_board = Color.of(.849,.667,.569,1)
+        const black_board = Color.of(.496,.200,.1,1)
 
 
         var board = this.g.gameState;
@@ -194,8 +197,26 @@ class Assignment_Three_Scene extends Scene_Component
             this.player_checkers = white_pieces;
             this.checker_picker.checker_locations = this.player_checkers;
         
+        
+        //draw the board
+        var color = false; //false = white, true = black board piece
+        for(var i = 0; i < 8; i++){
+            var row_count = i * 2 - 7;
+            for(var j = 0; j < 8; j++){
+                let translate = Vec.of(row_count, j * 2 - 7,0,1);
+                if(color)
+                    this.shapes.tile.draw(graphics_state, Mat4.scale(Vec.of(4, 4, 4)).times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation(translate)), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:black_board}));
+                else
+                    this.shapes.tile.draw(graphics_state, Mat4.scale(Vec.of(4, 4, 4)).times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation(translate)), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:white_board}));
+                color = !(color);
+            }
+            color = !(color);
+        }
+        this.shapes.frame.draw(graphics_state, Mat4.translation(Vec.of(3,3,.25,1)).times(Mat4.scale(Vec.of(46.5, 46.5, 46.5))), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:wood_color}));
 
-        this.shapes.frame.draw(graphics_state, Mat4.translation(Vec.of(3,0,0,1)).times(Mat4.scale(Vec.of(50, 50, 50))), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:wood_color}))
+        
+        
+
       }
   }
 
