@@ -61,6 +61,7 @@ class Game
     this.player_coords = null
     this.player_states = null
     this.ai = new Game_AI(this)
+    this.gameMessage = null;
   }
 
   print_state(state)
@@ -111,6 +112,7 @@ class Game
     if(this.player_coords.length == 0)
     {
       console.log("Defeat: AI wins.")
+      this.gameMessage = "Defeat";
       return false;
     }
 
@@ -127,6 +129,7 @@ class Game
     if(invalid_move)
     {
       console.log("Invalid move.")
+      this.gameMessage = "Invalid";
       return false;
     }
 
@@ -675,10 +678,14 @@ class Game_AI
     //if state is null, indicates, game is over, return the board as is
     if(move_state == null)
     {
-      if (leaf_h>=MAX_HEURISTIC)
+      if (leaf_h>=MAX_HEURISTIC){
         console.log("Defeat: AI wins.")
-      else
+        this.game.gameMessage = "Defeat";
+        }
+      else{
         console.log("Victory: AI loses.")
+        this.game.gameMessage = "Victory";
+        }
 
       //print state as is and return it
       this.game.print_state(state)
@@ -694,11 +701,13 @@ class Game_AI
     if (move_h>=MAX_HEURISTIC)
     {
       console.log("Defeat: AI wins.")
+      this.game.gameMessage = "Defeat";
       return null
     }
     else if (move_h<=MIN_HEURISTIC)
     {
       console.log("Victory: AI loses.")
+      this.game.gameMessage = "Victory";
       return null
     }
     else if (leaf_h>=MAX_HEURISTIC)

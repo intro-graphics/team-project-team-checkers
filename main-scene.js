@@ -34,7 +34,21 @@ class Checkers_Scene extends Scene_Component
                                 //        (Requirement 1)
             max_amb: context.get_instance(Phong_Shader).material(Color.of(1,1,1,1),{ambient:1}),
             zero_amb: context.get_instance(Phong_Shader).material(Color.of(1,1,1,1),{ambient:0}),
-
+            defeat:   context.get_instance(Phong_Shader).material(
+                            Color.of(1, 1, 1, 1), {
+                            ambient: 1,
+                            texture: context.get_instance("assets/defeat.png", false)
+                            }),
+            victory:   context.get_instance(Phong_Shader).material(
+                            Color.of(1, 1, 1, 1), {
+                            ambient: 1,
+                            texture: context.get_instance("assets/Victory.png", false)
+                            }),
+            invalid:   context.get_instance(Phong_Shader).material(
+                            Color.of(1, 1, 1, 1), {
+                            ambient: 1,
+                            texture: context.get_instance("assets/Invalid.png", false)
+                            })
 
           }
         this.lights = [ new Light( Vec.of( 5,-10,5,1 ), Color.of( 0, 1, 1, 1 ), 1000 ) ];
@@ -252,6 +266,18 @@ class Checkers_Scene extends Scene_Component
           graphics_state.camera_transform = new_camera_transform.map( (x,i) => Vec.from( graphics_state.camera_transform[i] ).mix( x, 0.1 ) )
         }
 
+        if(this.g.gameMessage){
+            var translationMatrix = (Mat4.inverse(graphics_state.camera_transform)).times(Mat4.translation(Vec.of(0, 0, -50)));
+            //this.g.gameMessage = "Victory";
+            switch(this.g.gameMessage){
+                case 'Defeat':
+                    this.shapes.tile.draw(graphics_state, translationMatrix.times(Mat4.scale(Vec.of(8, 4, 4))), this.materials.defeat);
+                    break;
+                 case 'Victory':
+                    this.shapes.tile.draw(graphics_state, translationMatrix.times(Mat4.scale(Vec.of(8, 4, 4))), this.materials.victory);
+                    break;
+            }
+        }
       }
   }
 

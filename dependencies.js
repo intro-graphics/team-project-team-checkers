@@ -668,6 +668,7 @@ class Pick_Checker extends Scene_Component{
       var closest_index = -1;
       
       //check for intersection with checkers - spherical hit boxes
+      if(this.checker_locations){
       for(var i = 0; i < this.checker_locations.length; i++){
         var center = Vec.of(this.checker_locations[i][0], this.checker_locations[i][1] + .5, this.checker_locations[i][2]);
         var b = ray_vec.dot(start.minus(center));
@@ -701,6 +702,7 @@ class Pick_Checker extends Scene_Component{
             closest_index = i;
           }
         }
+      }
       }
       
       return closest_index;
