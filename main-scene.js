@@ -119,7 +119,7 @@ class Assignment_Three_Scene extends Scene_Component
         const black_color = Color.of(.396,.141,0,1)
         const wood_color  = Color.of(.251, .149, .110, 1)
         const white_board = Color.of(.849,.667,.569,1)
-        const black_board = Color.of(.496,.200,.1,1)
+        const black_board = Color.of(.251, .149, .110, 1)
 
 
         var board = this.g.gameState;
@@ -205,17 +205,14 @@ class Assignment_Three_Scene extends Scene_Component
             for(var j = 0; j < 8; j++){
                 let translate = Vec.of(row_count, j * 2 - 7,0,1);
                 if(color)
-                    this.shapes.tile.draw(graphics_state, Mat4.scale(Vec.of(4, 4, 4)).times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation(translate)), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:black_board}));
+                    this.shapes.tile.draw(graphics_state, Mat4.scale(Vec.of(4, 4, 4)).times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation(translate)), this.materials.max_amb.override({ambient:0.75,diffusivity:0.50, color:black_board}));
                 else
-                    this.shapes.tile.draw(graphics_state, Mat4.scale(Vec.of(4, 4, 4)).times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation(translate)), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:white_board}));
+                    this.shapes.tile.draw(graphics_state, Mat4.scale(Vec.of(4, 4, 4)).times(Mat4.rotation(Math.PI / 2, Vec.of(1, 0, 0))).times(Mat4.translation(translate)), this.materials.max_amb.override({ambient:0.75,diffusivity:0.50, color:white_board}));
                 color = !(color);
             }
             color = !(color);
         }
-        this.shapes.frame.draw(graphics_state, Mat4.translation(Vec.of(3,3,.25,1)).times(Mat4.scale(Vec.of(46.5, 46.5, 46.5))), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:wood_color}));
-
-        
-        
+        this.shapes.frame.draw(graphics_state, Mat4.translation(Vec.of(3,1,.25,1)).times(Mat4.scale(Vec.of(46.5, 46.5, 46.5))), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:wood_color}));
 
       }
   }
