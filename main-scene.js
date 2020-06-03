@@ -37,7 +37,7 @@ class Checkers_Scene extends Scene_Component
             defeat:   context.get_instance(Phong_Shader).material(
                             Color.of(1, 1, 1, 1), {
                             ambient: 1,
-                            texture: context.get_instance("assets/defeat.png", false)
+                            texture: context.get_instance("assets/Defeat.png", false)
                             }),
             victory:   context.get_instance(Phong_Shader).material(
                             Color.of(1, 1, 1, 1), {
