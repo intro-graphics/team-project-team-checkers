@@ -18,7 +18,14 @@ Github: kaitlyn-wang
 
 ![alt text](https://github.com/intro-graphics/team-project-team-checkers/blob/master/screenshots/board.png)
 
-## Description:
-We will build an interactive board for checkers. A human-player will be able to mouse-pick the pieces to move them around, and the rules of checkers will keep the player from making illegal moves. There will be a simple AI opponent for the human-player to play against.
+## Setup:
+<code>git clone</code> the github repository and run it as you would for any CS174-A assignment. Double click the **host.bat** file to start the local host. Open a chrome tab and navigate to *localhost:8000* to play.
 
-Advanced Graphic Feature: Mouse Picking
+## Playing:
+He have built an interactive board for checkers. To make a move, click on a peice (it will light up) and click on a destination tile. The game will prevent you from making an illegal move. (Remember: if you can take an opponent's peice, you must, by the rules of Checkers). After you make your legal move. An AI will immediately play next, and it will once again be your move. The game will end once you or the AI is out of moves, and will display "Victory" or "Defeat". To restart the game at any point, press **F5** (refreshing the page).
+
+## Additional Features:
+Your camera angle can be changed under the bottom left "Checkers_Scene."
+
+## Sources:
+We did not use code from any site. Some ideas and implementations were inspired from CS174-A and CS161
