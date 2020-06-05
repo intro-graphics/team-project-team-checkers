@@ -46,9 +46,9 @@ class Checkers_Scene extends Scene_Component
                             }),
 
             checker_material:   context.get_instance(Phong_Shader).material(
-                            Color.of(1, 1, 1, .5), {
+                            Color.of(0, 0, 0, 1), {
                             ambient: 0.5,
-                            texture: context.get_instance("assets/board.png", false)
+                            texture: context.get_instance("assets/wooden_board.png", false)
                             }),
 
             invalid:   context.get_instance(Phong_Shader).material(
