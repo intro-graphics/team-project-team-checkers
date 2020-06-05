@@ -44,6 +44,13 @@ class Checkers_Scene extends Scene_Component
                             ambient: 1,
                             texture: context.get_instance("assets/Victory.png", false)
                             }),
+
+            checker_material:   context.get_instance(Phong_Shader).material(
+                            Color.of(1, 1, 1, .5), {
+                            ambient: 0.5,
+                            texture: context.get_instance("assets/board.png", false)
+                            }),
+
             invalid:   context.get_instance(Phong_Shader).material(
                             Color.of(1, 1, 1, 1), {
                             ambient: 1,
@@ -131,6 +138,7 @@ class Checkers_Scene extends Scene_Component
                          ];
 
 
+        const white = Color.of(1,1,1,1)
         const white_color = Color.of(.906,.725,.514,1)
         const black_color = Color.of(.396,.141,0,1)
         const wood_color  = Color.of(.251, .149, .110, 1)
@@ -199,7 +207,7 @@ class Checkers_Scene extends Scene_Component
                       //if queen draw another checker peice
                       if(board[i][j] == 'q')
                         this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.90,diffusivity:0.90, color:white_color}));
-                    
+
                     }
                     else{
                     //draw
@@ -219,7 +227,7 @@ class Checkers_Scene extends Scene_Component
 
                   //add to player_checkers
                   white_pieces.push(this.board_locations[i][j]);
-                  
+
                 }
 
                 //black piece found, draw
@@ -244,6 +252,8 @@ class Checkers_Scene extends Scene_Component
 
 
         //draw the board
+        this.shapes.tile.draw(graphics_state, Mat4.translation(Vec.of(0,0,0)).times(Mat4.scale(Vec.of(32,1,32)).times(Mat4.rotation(-Math.PI/2.0,Vec.of(1,0,0)))), this.materials.checker_material);
+        /*
         var color = false; //false = white, true = black board piece
         for(var i = 0; i < 8; i++){
             var row_count = i * 2 - 7;
@@ -257,6 +267,8 @@ class Checkers_Scene extends Scene_Component
             }
             color = !(color);
         }
+        */
+
         this.shapes.frame.draw(graphics_state, Mat4.translation(Vec.of(3,1,.25,1)).times(Mat4.scale(Vec.of(46.5, 46.5, 46.5))), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:wood_color}));
 
         //attach
