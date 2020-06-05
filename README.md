@@ -28,4 +28,5 @@ He have built an interactive board for checkers. Your team is White. To make a m
 Your camera angle can be changed under the bottom left "Checkers_Scene."
 
 ## Sources:
-We did not use code from any site. Some ideas and implementations were inspired from CS174-A and CS161
+*Tiny Graphics* and other code-segments included from the various assigments of CS174-A are utilized in our project.
+We did not use code from any other site. However, some ideas and implementations were inspired from CS174-A and CS161 course material.
