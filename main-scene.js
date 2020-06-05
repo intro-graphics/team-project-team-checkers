@@ -140,7 +140,9 @@ class Checkers_Scene extends Scene_Component
 
         const white = Color.of(1,1,1,1)
         const white_color = Color.of(.906,.725,.514,1)
+        const white_queen_color = Color.of(.96,.78,.37,1)
         const black_color = Color.of(.396,.141,0,1)
+        const black_queen_color = Color.of(.27,.01,.09,1)
         const wood_color  = Color.of(.251, .149, .110, 1)
         const white_board = Color.of(.849,.667,.569,1)
         const black_board = Color.of(.251, .149, .110, 1)
@@ -206,7 +208,7 @@ class Checkers_Scene extends Scene_Component
                       this.shapes.checker.draw(graphics_state,Mat4.translation(this.board_locations[i][j]),this.materials.max_amb.override({ambient:0.90,diffusivity:0.90, color:white_color}));
                       //if queen draw another checker peice
                       if(board[i][j] == 'q')
-                        this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.90,diffusivity:0.90, color:white_color}));
+                        this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.90,diffusivity:0.90, color:white_queen_color}));
 
                     }
                     else{
@@ -214,7 +216,7 @@ class Checkers_Scene extends Scene_Component
                     this.shapes.checker.draw(graphics_state,Mat4.translation(this.board_locations[i][j]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}));
                     //if queen draw another checker peice
                     if(board[i][j] == 'q')
-                      this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}));
+                      this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_queen_color}));
                      }
                   }
                   else{
@@ -222,7 +224,7 @@ class Checkers_Scene extends Scene_Component
                       this.shapes.checker.draw(graphics_state,Mat4.translation(this.board_locations[i][j]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}));
                       //if queen draw another checker peice
                       if(board[i][j] == 'q')
-                        this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_color}));
+                        this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:white_queen_color}));
                   }
 
                   //add to player_checkers
@@ -235,7 +237,7 @@ class Checkers_Scene extends Scene_Component
                   this.shapes.checker.draw(graphics_state,Mat4.translation(this.board_locations[i][j]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:black_color}));
                   //if queen draw another checker peice
                   if(board[i][j] == 'k')
-                    this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:black_color}));
+                    this.shapes.checker.draw(graphics_state,Mat4.translation([this.board_locations[i][j][0],1.0,this.board_locations[i][j][2],1.2]),this.materials.max_amb.override({ambient:0.75,diffusivity:0.5, color:black_queen_color}));
                 }
               }
             }
