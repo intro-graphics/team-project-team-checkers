@@ -169,7 +169,7 @@ class Checkers_Scene extends Scene_Component
       this.new_line();
       this.key_triggered_button( "Detach Camera",  [ "3" ], () => this.attached = null);
       this.new_line();
-      this.key_triggered_button( "Message",  [ "4" ], () => this.gradMessage = () => true);
+      this.key_triggered_button( "Message",  [ "4" ], () => this.gradMessage = !this.gradMessage);
     }
 
     convert_to_row_col(coordinates){
@@ -379,15 +379,6 @@ class Checkers_Scene extends Scene_Component
              this.shapes.tile.draw(graphics_state, translationMatrix.times(Mat4.scale(Vec.of(8, 4, 4))), this.materials.goBruins);
         }
         
-        var camerax = graphics_state.camera_transform[0][3];
-        var cameray = graphics_state.camera_transform[1][3];
-        var cameraz = graphics_state.camera_transform[2][3];
-        if(camerax > 250) graphics_state.camera_transform = Mat4.look_at( Vec.of( 250,graphics_state.camera_transform[1][3],graphics_state.camera_transform[2][3]), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) );
-        else if(camerax < -250) graphics_state.camera_transform[0][3] = Mat4.look_at( Vec.of(-250,graphics_state.camera_transform[1][3],graphics_state.camera_transform[2][3]), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) );
-        if(cameraz > 450) graphics_state.camera_transform[2][3] = Mat4.look_at( Vec.of(graphics_state.camera_transform[0][3], 450 ,graphics_state.camera_transform[2][3]), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) );
-        else if(cameraz < -450) graphics_state.camera_transform[2][3] = Mat4.look_at( Vec.of(graphics_state.camera_transform[0][3], -450 ,graphics_state.camera_transform[2][3]), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) );
-        if(cameray > 140) graphics_state.camera_transform[2][3] = Mat4.look_at( Vec.of(graphics_state.camera_transform[0][3],graphics_state.camera_transform[1][3], 450 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) );
-        else if(cameray < -140) graphics_state.camera_transform[2][3] = Mat4.look_at( Vec.of(graphics_state.camera_transform[0][3],graphics_state.camera_transform[1][3], -450 ), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) );
 
       }
   }
