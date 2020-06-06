@@ -21,8 +21,18 @@ class Checkers_Scene extends Scene_Component
                          sphere4: new Subdivision_Sphere(4),
                          checker: new Checker_Peice(20,20),
                          frame  : new Shape_From_File("assets/frame.obj"),
-                         tile   : new Square()
-                       }
+                         tile   : new Square(),
+                         world  : new Cube(),
+                         table  : new Shape_From_File("assets/table.obj"),
+                         rug    : new Square(),
+                         drawers : new Cube(),
+                         shelf  : new Cube(),
+                         books  : new Cube(),
+                       };
+        shapes.world.texture_coords = shapes.world.texture_coords.map(v => Vec.of(v[0] * 10, v[1] * 10));
+        shapes.rug.texture_coords = shapes.rug.texture_coords.map(v => Vec.of(v[0] * 10, v[1] * 10));
+        shapes.drawers.texture_coords = shapes.drawers.texture_coords.map(v => Vec.of(v[0] * 4, v[1] * 1));
+        shapes.books.texture_coords = shapes.books.texture_coords.map(v => Vec.of(v[0] * 18, v[1] * 1));
         this.submit_shapes( context, shapes );
 
                                      // Make some Material objects available to you:
@@ -55,11 +65,48 @@ class Checkers_Scene extends Scene_Component
                             Color.of(1, 1, 1, 1), {
                             ambient: 1,
                             texture: context.get_instance("assets/Invalid.png", false)
+                            }),
+            goBruins:   context.get_instance(Phong_Shader).material(
+                            Color.of(1, 1, 1, 1), {
+                            ambient: 1,
+                            texture: context.get_instance("assets/GoBruins.png", false)
+                            }),
+            wall:   context.get_instance(Phong_Shader).material(
+                            Color.of(0, 0, 0, 1), {
+                            ambient: 1,
+                            texture: context.get_instance("assets/wallpaper.png", false)
+                            }),
+            rug:   context.get_instance(Phong_Shader).material(
+                            Color.of(.6, .223, .196, 1), {
+                            ambient: .5,
+                            diffusivity:0.25,
+                            texture: context.get_instance("assets/rug.png", false)
+                            }),
+            drawers:   context.get_instance(Phong_Shader).material(
+                            Color.of(0, 0, 0, 1), {
+                            ambient: .5,
+                            diffusivity:0.5,
+                            texture: context.get_instance("assets/drawers.png", false)
+                            }),
+            books:   context.get_instance(Phong_Shader).material(
+                            Color.of(0, 0, 0, 1), {
+                            ambient: .5,
+                            diffusivity:0.5,
+                            texture: context.get_instance("assets/books.png", false)
+                            }),
+            door:   context.get_instance(Phong_Shader).material(
+                            Color.of(0, 0, 0, 1), {
+                            ambient: .8,
+                            diffusivity:0.8,
+                            texture: context.get_instance("assets/door.png", false)
                             })
 
           }
+
+
         this.lights = [ new Light( Vec.of( 5,-10,5,1 ), Color.of( 0, 1, 1, 1 ), 1000 ) ];
         this.attached = null;
+        this.gradMessage = false;
 
         this.board_locations = [
                           [Vec.of(-28,0,-28,1), Vec.of(-20,0,-28,1), Vec.of(-12,0,-28,1), Vec.of(-4,0,-28,1), Vec.of(4,0,-28,1), Vec.of(12,0,-28,1), Vec.of(20,0,-28,1), Vec.of(28,0,-28,1)],
@@ -108,8 +155,8 @@ class Checkers_Scene extends Scene_Component
         this.g = new Game();
         context.register_scene_component(this.checker_picker);
 
-        this.player_view = Mat4.rotation(-Math.PI/6.0,Vec.of(1,0,0)).times(Mat4.translation([0,10,100]))
-        this.opponent_view = Mat4.rotation(Math.PI/6.0,Vec.of(1,0,0)).times(Mat4.translation([0,10,-100])).times(Mat4.rotation(Math.PI,Vec.of(0,1,0)))
+        this.player_view = Mat4.rotation(-Math.PI/6.0,Vec.of(1,0,0)).times(Mat4.translation([0,-10,100]))
+        this.opponent_view = Mat4.rotation(Math.PI/6.0,Vec.of(1,0,0)).times(Mat4.translation([0,-10,-100])).times(Mat4.rotation(Math.PI,Vec.of(0,1,0)))
       }
 
     make_control_panel()            // Draw the scene's buttons, setup their actions and keyboard shortcuts, and monitor live measurements.
@@ -119,6 +166,10 @@ class Checkers_Scene extends Scene_Component
       this.key_triggered_button( "Player View",  [ "1" ], () => this.attached = () => this.player_view );
       this.new_line();
       this.key_triggered_button( "Opponent View",  [ "2" ], () => this.attached = () => this.opponent_view);
+      this.new_line();
+      this.key_triggered_button( "Detach Camera",  [ "3" ], () => this.attached = null);
+      this.new_line();
+      this.key_triggered_button( "Message",  [ "4" ], () => this.gradMessage = () => true);
     }
 
     convert_to_row_col(coordinates){
@@ -272,15 +323,46 @@ class Checkers_Scene extends Scene_Component
         */
 
         this.shapes.frame.draw(graphics_state, Mat4.translation(Vec.of(3,1,.25,1)).times(Mat4.scale(Vec.of(46.5, 46.5, 46.5))), this.materials.max_amb.override({ambient:0.50,diffusivity:0.50, color:wood_color}));
+        this.shapes.table.draw(graphics_state, Mat4.translation(Vec.of(0,-55,10,1)).times(Mat4.scale(Vec.of(70, 70, 70))), this.materials.max_amb.override({ambient:0.50,diffusivity:0.25, color:white_color}));
+        this.shapes.rug.draw(graphics_state, Mat4.translation(Vec.of(0,-149,10,1)).times(Mat4.scale(Vec.of(500, 500, 500))).times(Mat4.rotation(-Math.PI/2.0,Vec.of(1,0,0))), this.materials.rug);
+        this.shapes.tile.draw(graphics_state, Mat4.translation(Vec.of(0,149,10,1)).times(Mat4.scale(Vec.of(500, 500, 500))).times(Mat4.rotation(-Math.PI/2.0,Vec.of(1,0,0))), this.materials.max_amb.override({ambient:.9,diffusivity:0.90, color: Color.of(1,1,.95,1)}));
+        //draw shelf
+        this.shapes.world.draw(graphics_state, Mat4.translation(Vec.of(3,50,.25,1)).times(Mat4.scale(Vec.of(300, 200, 500))), this.materials.wall);
+        this.shapes.drawers.draw(graphics_state, Mat4.translation(Vec.of(3,-100,-450,1)).times(Mat4.scale(Vec.of(250, 45, 30))), this.materials.drawers);
+        this.shapes.tile.draw(graphics_state, Mat4.translation(Vec.of(3,-100,-499,1)).times(Mat4.scale(Vec.of(250, 220, 200))), this.materials.max_amb.override({ambient:.4,diffusivity:0.40, color: wood_color}));
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(3,120,-460,1)).times(Mat4.scale(Vec.of(250, 8, 30))).times(Mat4.rotation(-Math.PI/2.0,Vec.of(1,0,0))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color: Color.of(.518, .302, .125, 1)}));
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(3,80,-460,1)).times(Mat4.scale(Vec.of(250, 2, 30))).times(Mat4.rotation(-Math.PI/2.0,Vec.of(1,0,0))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color: Color.of(.518, .302, .125, 1)}));
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(3,40,-460,1)).times(Mat4.scale(Vec.of(250, 2, 30))).times(Mat4.rotation(-Math.PI/2.0,Vec.of(1,0,0))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color:  Color.of(.518, .302, .125, 1)}));        
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(3,0,-460,1)).times(Mat4.scale(Vec.of(250, 2, 30))).times(Mat4.rotation(-Math.PI/2.0,Vec.of(1,0,0))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color:  Color.of(.518, .302, .125, 1)}));
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(3,-55,-460,1)).times(Mat4.scale(Vec.of(250, 2, 30))).times(Mat4.rotation(-Math.PI/2.0,Vec.of(1,0,0))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color: Color.of(.518, .302, .125, 1)}));
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(3,-55,-460,1)).times(Mat4.scale(Vec.of(250, 2, 30))).times(Mat4.rotation(-Math.PI/2.0,Vec.of(1,0,0))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color: Color.of(.518, .302, .125, 1)}));
+        //vertical sections of shelf
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(1,-55,-460,1)).times(Mat4.scale(Vec.of(2, 170, 30))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color: Color.of(.518, .302, .125, 1)}));
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(-244.9,-55,-460,1)).times(Mat4.scale(Vec.of(2, 170, 30))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color: Color.of(.518, .302, .125, 1)}));
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(6,-55,-460,1)).times(Mat4.scale(Vec.of(2, 170, 30))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color: Color.of(.518, .302, .125, 1)}));
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(250.9,-55,-460,1)).times(Mat4.scale(Vec.of(2, 170, 30))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color: Color.of(.518, .302, .125, 1)}));
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(-126.1,-55,-460,1)).times(Mat4.scale(Vec.of(2, 170, 30))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color: Color.of(.518, .302, .125, 1)}));
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(-120.4,-55,-460,1)).times(Mat4.scale(Vec.of(2, 170, 30))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color: Color.of(.518, .302, .125, 1)}));
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(126.1,-55,-460,1)).times(Mat4.scale(Vec.of(2, 170, 30))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color: Color.of(.518, .302, .125, 1)}));
+        this.shapes.shelf.draw(graphics_state, Mat4.translation(Vec.of(131.4,-55,-460,1)).times(Mat4.scale(Vec.of(2, 170, 30))), this.materials.max_amb.override({ambient:.5,diffusivity:0.50, color: Color.of(.518, .302, .125, 1)}));
+        //books
+        this.shapes.books.draw(graphics_state, Mat4.translation(Vec.of(3,-35,-462,1)).times(Mat4.scale(Vec.of(240, 25, 30))).times(Mat4.rotation(-Math.PI/2.0,Vec.of(1,0,0))), this.materials.books);
+        this.shapes.books.draw(graphics_state, Mat4.translation(Vec.of(3,15,-462,1)).times(Mat4.scale(Vec.of(240, 18, 30))).times(Mat4.rotation(-Math.PI/2.0,Vec.of(1,0,0))), this.materials.books);
+        this.shapes.books.draw(graphics_state, Mat4.translation(Vec.of(3,57,-462,1)).times(Mat4.scale(Vec.of(240, 15, 30))).times(Mat4.rotation(-Math.PI/2.0,Vec.of(1,0,0))), this.materials.books);
+        this.shapes.books.draw(graphics_state, Mat4.translation(Vec.of(3, 95,-462,1)).times(Mat4.scale(Vec.of(240, 13, 30))).times(Mat4.rotation(-Math.PI/2.0,Vec.of(1,0,0))), this.materials.books);
+        
+        //door
+        this.shapes.tile.draw(graphics_state, Mat4.translation(Vec.of(-100,-18,499.5,1)).times(Mat4.scale(Vec.of(70, 130, 1))), this.materials.door);
+
 
         //attach
         if(this.attached != null)
         {
-          var new_camera_transform = Mat4.inverse(this.attached().times(Mat4.translation([0,0,0])))
-          graphics_state.camera_transform = new_camera_transform.map( (x,i) => Vec.from( graphics_state.camera_transform[i] ).mix( x, 0.1 ) )
+          var new_camera_transform = Mat4.inverse(this.attached().times(Mat4.translation([0,0,0])));
+          graphics_state.camera_transform = new_camera_transform.map( (x,i) => Vec.from( graphics_state.camera_transform[i] ).mix( x, 0.1 ) );
         }
 
-        if(this.g.gameMessage){
+        if(this.g.gameMessage && !this.gradMessage){
             var translationMatrix = (Mat4.inverse(graphics_state.camera_transform)).times(Mat4.translation(Vec.of(0, 0, -50)));
             //this.g.gameMessage = "Victory";
             switch(this.g.gameMessage){
@@ -292,6 +374,12 @@ class Checkers_Scene extends Scene_Component
                     break;
             }
         }
+        if(this.gradMessage){
+             var translationMatrix = (Mat4.inverse(graphics_state.camera_transform)).times(Mat4.translation(Vec.of(0, 0, -50)));
+             this.shapes.tile.draw(graphics_state, translationMatrix.times(Mat4.scale(Vec.of(8, 4, 4))), this.materials.goBruins);
+        }
+
+
       }
   }
 
